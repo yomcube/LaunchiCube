@@ -26,3 +26,6 @@ A simple multi-instance launcher for ClassiCube, inspired by MultiMC, and made i
 	- 🟥 Settings
 	- 🟥 Themes
 
+## Bugs
+
+- Client can't use plugins, because "ClassiCube.exe is missing"
