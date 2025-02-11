@@ -16,9 +16,14 @@ A simple multi-instance launcher for ClassiCube, inspired by MultiMC, and made i
 
 - 🟨 Instances
 	- 🟩 Multi-Instances
+   	- 🟩 Adding Instances
 	- 🟨 Custom Instance Icons
+	- 🟥 Deleting Instances
 	- 🟥 Editing Instances
 	- 🟥 Plugin Manager
+   	- 🟥 Multible Instances Running
+  		- 🟥 Stop Button
+   	  	- 🟥 Management of Multible Instances
 	- 🟥 Custom Clients
 - 🟥 Misc
 	- 🟥 Mac and Linux Support
