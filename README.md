@@ -27,9 +27,9 @@ A simple multi-instance launcher for ClassiCube, inspired by MultiMC, and made i
 	- 🟥 Custom Clients
 - 🟥 Misc
 	- 🟥 Mac, Linux, and 32bit Support
-  		-🟥 Mac Downloads
-   		-🟥 Linux Downloads
-   		-🟥 32bit Downloads For All OSes
+  		- 🟥 Mac Downloads
+   		- 🟥 Linux Downloads
+   		- 🟥 32bit Downloads For All OSes
 	- 🟥 Account Switcher
 	- 🟥 Settings
 	- 🟥 Themes
