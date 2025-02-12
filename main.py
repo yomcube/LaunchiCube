@@ -10,6 +10,8 @@ import requests
 import math
 import subprocess
 
+print("Starting...")
+
 LOGO_SIZE = (150, 150)
 MAX_TEXT_WIDTH = 140
 
@@ -19,36 +21,53 @@ try:
     from ctypes import windll
     windll.shcore.SetProcessDpiAwareness(1)
 finally:
-    "Do nothing"
+    pass
 
-if not os.path.isdir("instances/"):
-    os.mkdir("instances/")
+def ensure_needed_files():
+    if not os.path.isdir("instances/"):
+        os.mkdir("instances/")
 
-if not os.path.isfile("instances/index.json"):
-    with open("instances/index.json", "w") as f:
-        f.write("[]")
+    if not os.path.isfile("instances/index.json"):
+        with open("instances/index.json", "w") as f:
+            f.write("[]")
+            
+    if not os.path.isdir("clients/"):
+        os.mkdir("clients/")
         
-if not os.path.isdir("clients/"):
-    os.mkdir("clients/")
-    
-r = requests.get("https://cdn.classicube.net/client/release/win64/ClassiCube.zip")
-z = ZipFile(io.BytesIO(r.content))
-z.extract("ClassiCube/ClassiCube.exe", path="clients/temp/")
-if os.path.isfile("clients/Latest Stable Version.exe"):
-    os.remove("clients/Latest Stable Version.exe")
-os.rename("clients/temp/ClassiCube/ClassiCube.exe", "clients/Latest Stable Version.exe")
-z.close()
-os.rmdir("clients/temp/ClassiCube")
-os.rmdir("clients/temp/")
-    
-r = requests.get("https://nightly.link/ClassiCube/ClassiCube/workflows/build_windows/master/ClassiCube-Win64-Direct3D9.exe.zip")
-z = ZipFile(io.BytesIO(r.content))
-z.extractall(path="clients/temp/")
-if os.path.isfile("clients/Latest Dev Version.exe"):
-    os.remove("clients/Latest Dev Version.exe")
-os.rename("clients/temp/cc-w64-d3d9.exe", "clients/Latest Dev Version.exe")
-z.close()
-os.rmdir("clients/temp/")
+    if not os.path.isfile("clients/index.json"):
+        with open("clients/index.json", "w") as f:
+            f.write('{"release_ver": "0.0"}')
+
+def update_clients():
+    r = requests.get("https://cdn.classicube.net/client/builds.json")
+    f = json.loads(load_file("clients/index.json"))
+    if not json.loads(r.text)["release_version"] == f["release_ver"]:
+        print("Downloading Latest Release Version")
+        f["release_ver"] = json.loads(r.text)["release_version"]
+        save_file("clients/index.json", json.dumps(f))
+        r = requests.get("https://cdn.classicube.net/client/release/win64/ClassiCube.zip")
+        z = ZipFile(io.BytesIO(r.content))
+        z.extract("ClassiCube/ClassiCube.exe", path="clients/temp/")
+        if os.path.isfile("clients/Latest Stable Version.exe"):
+            os.remove("clients/Latest Stable Version.exe")
+        os.rename("clients/temp/ClassiCube/ClassiCube.exe", "clients/Latest Stable Version.exe")
+        z.close()
+        os.rmdir("clients/temp/ClassiCube")
+        os.rmdir("clients/temp/")
+
+    # Need to think of a way to check if an update happened here...
+    # If you have an idea, make an issue
+    # BUT, dont say to use the latest_ts in the builds.json
+    # the file update time gets changed for some reason on the exe
+    print("Downloading Latest Dev Version")
+    r = requests.get("https://nightly.link/ClassiCube/ClassiCube/workflows/build_windows/master/ClassiCube-Win64-Direct3D9.exe.zip")
+    z = ZipFile(io.BytesIO(r.content))
+    z.extractall(path="clients/temp/")
+    if os.path.isfile("clients/Latest Dev Version.exe"):
+        os.remove("clients/Latest Dev Version.exe")
+    os.rename("clients/temp/cc-w64-d3d9.exe", "clients/Latest Dev Version.exe")
+    z.close()
+    os.rmdir("clients/temp/")
 
 def load_file(filename):
     if os.path.exists(filename):
@@ -85,6 +104,8 @@ def makeInstance(name, version):
     save_file("instances/index.json", json.dumps(instances_json))
     os.mkdir(f"instances/{safe_unique_filename}")
 
+ensure_needed_files()
+update_clients()
 class LaunchiCubeApp:
     def __init__(self, root):
         self.root = root
