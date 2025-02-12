@@ -233,7 +233,10 @@ class LaunchiCubeApp:
     def start_game(self, instance):
         if instance:
             print(f"Starting game for: {instance['name']}")
-            subprocess.run([f"clients/{instance['ver']}.exe"], cwd=f'instances/{instance['dir']}/')
+            if sys.platform == "darwin" or sys.platform == "linux":
+                subprocess.run([f"clients/{instance['ver']}"], cwd=f'instances/{instance['dir']}/')
+            else:
+                subprocess.run([f"clients/{instance['ver']}.exe"], cwd=f'instances/{instance['dir']}/')
 
     def update_right_bar(self, instance):
         for widget in self.right_frame.winfo_children():
