@@ -5,10 +5,12 @@ import os
 import json
 import re
 from zipfile import ZipFile
+from tarfile import TarFile
 import io
 import requests
 import math
 import subprocess
+import sys
 
 print("Starting...")
 
@@ -24,6 +26,11 @@ finally:
     pass
 
 def ensure_needed_files():
+    if not os.path.isfile("logo.png"):
+        r = requests.get("https://raw.githubusercontent.com/Tycho10101/LaunchiCube/refs/heads/main/logo.png")
+        with open("logo.png", "wb") as f:
+            f.write(r.content)
+
     if not os.path.isdir("instances/"):
         os.mkdir("instances/")
 
@@ -36,38 +43,82 @@ def ensure_needed_files():
         
     if not os.path.isfile("clients/index.json"):
         with open("clients/index.json", "w") as f:
-            f.write('{"release_ver": "0.0"}')
-
-def update_clients():
-    r = requests.get("https://cdn.classicube.net/client/builds.json")
-    f = json.loads(load_file("clients/index.json"))
-    if not json.loads(r.text)["release_version"] == f["release_ver"]:
-        print("Downloading Latest Release Version")
-        f["release_ver"] = json.loads(r.text)["release_version"]
-        save_file("clients/index.json", json.dumps(f))
-        r = requests.get("https://cdn.classicube.net/client/release/win64/ClassiCube.zip")
+            f.write('{"release_ver": "0.0", "dev_ver": 0}')
+            
+class updater:
+    def update_clients():
+        r = requests.get("https://cdn.classicube.net/client/builds.json")
+        f = json.loads(load_file("clients/index.json"))
+        
+        if not json.loads(r.text)["release_version"] == f["release_ver"]:
+            print("Downloading Latest Release Version")
+            f["release_ver"] = json.loads(r.text)["release_version"]
+            save_file("clients/index.json", json.dumps(f))
+            updater.download_release()
+        
+        if not json.loads(r.text)["latest_ts"] == f["dev_ver"]:
+            print("Downloading Latest Dev Version")
+            f["dev_ver"] = json.loads(r.text)["latest_ts"]
+            save_file("clients/index.json", json.dumps(f))
+            updater.download_dev()
+             
+    def download_release():
+        is_64bit = sys.maxsize > 2**32
+        
+        if sys.platform == "win32" or sys.platform == "cygwin":
+            if is_64bit:
+                r = requests.get("https://cdn.classicube.net/client/release/win64/ClassiCube.zip")
+            else:
+                r = requests.get("https://cdn.classicube.net/client/release/win32/ClassiCube.zip")
+            
+            z = ZipFile(io.BytesIO(r.content))
+            z.extract("ClassiCube/ClassiCube.exe", path="clients/temp/")
+            if os.path.isfile("clients/Latest Stable Version.exe"):
+                os.remove("clients/Latest Stable Version.exe")
+            os.rename("clients/temp/ClassiCube/ClassiCube.exe", "clients/Latest Stable Version.exe")
+            z.close()
+            os.rmdir("clients/temp/ClassiCube")
+            os.rmdir("clients/temp/")
+        
+        elif sys.platform == "darwin":
+            if is_64bit:
+                r = requests.get("https://cdn.classicube.net/client/release/osx64/ClassiCube.tar.gz")
+            else:
+                r = requests.get("https://cdn.classicube.net/client/release/osx32/ClassiCube.tar.gz")
+                
+            t = TarFile(io.BytesIO(r.content))
+            t.extract("ClassiCube/ClassiCube", path="clients/temp/")
+            if os.path.isfile("clients/Latest Stable Version"):
+                os.remove("clients/Latest Stable Version")
+            os.rename("clients/temp/ClassiCube/ClassiCube", "clients/Latest Stable Version")
+            t.close()
+            os.rmdir("clients/temp/ClassiCube")
+            os.rmdir("clients/temp/")
+            
+        elif sys.platform == "linux":
+            if is_64bit:
+                r = requests.get("https://cdn.classicube.net/client/release/nix64/ClassiCube.tar.gz")
+            else:
+                r = requests.get("https://cdn.classicube.net/client/release/nix32/ClassiCube.tar.gz")
+                
+            t = TarFile(io.BytesIO(r.content))
+            t.extract("ClassiCube/ClassiCube", path="clients/temp/")
+            if os.path.isfile("clients/Latest Stable Version"):
+                os.remove("clients/Latest Stable Version")
+            os.rename("clients/temp/ClassiCube/ClassiCube", "clients/Latest Stable Version")
+            t.close()
+            os.rmdir("clients/temp/ClassiCube")
+            os.rmdir("clients/temp/")
+                
+    def download_dev():
+        r = requests.get("https://nightly.link/ClassiCube/ClassiCube/workflows/build_windows/master/ClassiCube-Win64-Direct3D9.exe.zip")
         z = ZipFile(io.BytesIO(r.content))
-        z.extract("ClassiCube/ClassiCube.exe", path="clients/temp/")
-        if os.path.isfile("clients/Latest Stable Version.exe"):
-            os.remove("clients/Latest Stable Version.exe")
-        os.rename("clients/temp/ClassiCube/ClassiCube.exe", "clients/Latest Stable Version.exe")
+        z.extractall(path="clients/temp/")
+        if os.path.isfile("clients/Latest Dev Version.exe"):
+            os.remove("clients/Latest Dev Version.exe")
+        os.rename("clients/temp/cc-w64-d3d9.exe", "clients/Latest Dev Version.exe")
         z.close()
-        os.rmdir("clients/temp/ClassiCube")
         os.rmdir("clients/temp/")
-
-    # Need to think of a way to check if an update happened here...
-    # If you have an idea, make an issue
-    # BUT, dont say to use the latest_ts in the builds.json
-    # the file update time gets changed for some reason on the exe
-    print("Downloading Latest Dev Version")
-    r = requests.get("https://nightly.link/ClassiCube/ClassiCube/workflows/build_windows/master/ClassiCube-Win64-Direct3D9.exe.zip")
-    z = ZipFile(io.BytesIO(r.content))
-    z.extractall(path="clients/temp/")
-    if os.path.isfile("clients/Latest Dev Version.exe"):
-        os.remove("clients/Latest Dev Version.exe")
-    os.rename("clients/temp/cc-w64-d3d9.exe", "clients/Latest Dev Version.exe")
-    z.close()
-    os.rmdir("clients/temp/")
 
 def load_file(filename):
     if os.path.exists(filename):
@@ -105,7 +156,7 @@ def makeInstance(name, version):
     os.mkdir(f"instances/{safe_unique_filename}")
 
 ensure_needed_files()
-update_clients()
+updater.update_clients()
 class LaunchiCubeApp:
     def __init__(self, root):
         self.root = root
