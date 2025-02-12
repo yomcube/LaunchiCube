@@ -7,6 +7,7 @@ A simple multi-instance launcher for ClassiCube, inspired by MultiMC, and made i
 
 - Recomended Python Version: 3.12
 - requests
+- Pillow
 
 ## Features
 
