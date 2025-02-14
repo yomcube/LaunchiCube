@@ -34,7 +34,7 @@ A simple multi-instance launcher for ClassiCube, inspired by MultiMC, and made i
    		- 🟨 32bit Downloads For All OSes
 	- 🟥 Account Switcher
   		- 🟥 Windows Encryption
-  		- 🟥 Unix Encryption (May not add as it will be Quite difficult. It's XTEA encryption with machine and OS specific key. OG code [here](https://github.com/ClassiCube/ClassiCube/blob/6d5a5b78c8b8e99d5bb4f557b8caafd9d5bb8a5b/src/Platform_Posix.c#L1382). It was deliberately designed so passwords could not be transferred between devices or easily accessed by other apps)
+  		- 🟥 Unix Encryption (May not add as it will be Quite difficult. It's XTEA encryption with machine and OS specific key. OG code [here](https://github.com/ClassiCube/ClassiCube/blob/6d5a5b78c8b8e99d5bb4f557b8caafd9d5bb8a5b/src/Platform_Posix.c#L1382). It was deliberately designed so passwords could not be transferred between devices or easily accessed by other apps. If you are willing, you can make it yourself)
 	- 🟥 Settings
 	- 🟥 Themes
 
