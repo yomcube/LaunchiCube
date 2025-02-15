@@ -11,6 +11,30 @@ import requests
 import math
 import subprocess
 import sys
+import ctypes
+import base64
+
+try:
+    import ctypes.wintypes
+    crypt32 = ctypes.windll.crypt32
+
+    class DATA_BLOB(ctypes.Structure):
+        _fields_ = [("cbData", ctypes.wintypes.DWORD), ("pbData", ctypes.POINTER(ctypes.c_ubyte))]
+
+    def encrypt_data(data: bytes) -> bytes:
+        blob_in = DATA_BLOB(len(data), ctypes.cast(ctypes.create_string_buffer(data), ctypes.POINTER(ctypes.c_ubyte)))
+        blob_out = DATA_BLOB()
+        
+        if crypt32.CryptProtectData(
+            ctypes.byref(blob_in), None, None, None, None, 0, ctypes.byref(blob_out)
+        ):
+            encrypted_bytes = ctypes.string_at(blob_out.pbData, blob_out.cbData)
+            ctypes.windll.kernel32.LocalFree(blob_out.pbData)
+            return base64.b64encode(encrypted_bytes).decode("utf-8")
+        else:
+            raise RuntimeError(f"Encryption failed. Error Code: {ctypes.windll.kernel32.GetLastError()}")
+finally:
+    pass
 
 print("Starting...")
 
@@ -20,8 +44,7 @@ MAX_TEXT_WIDTH = 140
 last_instances_columns = 1
 
 try:
-    from ctypes import windll
-    windll.shcore.SetProcessDpiAwareness(1)
+    ctypes.windll.shcore.SetProcessDpiAwareness(1)
 finally:
     pass
 
@@ -30,6 +53,10 @@ def ensure_needed_files():
         r = requests.get("https://raw.githubusercontent.com/Tycho10101/LaunchiCube/refs/heads/main/logo.png")
         with open("logo.png", "wb") as f:
             f.write(r.content)
+            
+    if not os.path.isfile("accounts.json"):
+        with open("accounts.json", "w") as f:
+            f.write('{"accounts": [], "Selected Account": null}')
 
     if not os.path.isdir("instances/"):
         os.mkdir("instances/")
@@ -148,12 +175,54 @@ def getVersions(version_type):
 def instanceNameExists(name):
     return any(i["name"] == name for i in json.loads(load_file("instances/index.json")))
 
+def username_exists(name):
+    return any(i["name"] == name for i in json.loads(load_file("accounts.json"))["accounts"])
+
 def makeInstance(name, version):
     safe_unique_filename = get_safe_unique_filename("instances/", name)
     instances_json = json.loads(load_file("instances/index.json"))
     instances_json.append({"name": name, "ver": version, "dir": safe_unique_filename})
     save_file("instances/index.json", json.dumps(instances_json))
     os.mkdir(f"instances/{safe_unique_filename}")
+    
+def save_account(username, password):
+    accounts_json = json.loads(load_file("accounts.json"))
+    accounts_json["accounts"].append({"name": username, "password": encrypt_data(password.encode("utf-8"))})
+    save_file("accounts.json", json.dumps(accounts_json))
+
+def login_to_cc(username, password):
+    session = requests.Session()
+    r = session.get("https://www.classicube.net/api/login/")
+    myobj = {"username": username, "password": password, "token": r.json()["token"]}
+    x = session.post("https://www.classicube.net/api/login/", data=myobj)
+    return [x.json()["authenticated"],x.json()["username"]]
+    
+def change_option(instance, option, value):
+    f = load_file(f"instances/{instance}/options.txt")
+    f = f.split("\n")
+    where = None
+    for i in range(len(f)):
+        if f[i].startswith(f"{option}="):
+            where = i
+    
+    if where == None:
+        f.append(f"{option}={value}")
+    else:
+        f[where] = f"{option}={value}"
+    save_file(f"instances/{instance}/options.txt", "\n".join(f))
+    
+def delete_option(instance, option):
+    f = load_file(f"instances/{instance}/options.txt")
+    f = f.split("\n")
+    where = None
+    for i in range(len(f)):
+        if f[i].startswith(f"{option}="):
+            where = i
+    
+    if not where == None:
+        del f[where]
+    
+    save_file(f"instances/{instance}/options.txt", "\n".join(f))
 
 ensure_needed_files()
 updater.update_clients()
@@ -163,6 +232,8 @@ class LaunchiCubeApp:
         self.root.title("LaunchiCube")
         self.root.geometry("1200x750")
         self.root.configure(bg="#2C2F33")
+
+        self.load_accounts()
 
         try:
             self.launcher_icon = ImageTk.PhotoImage(Image.open("logo.png").resize(LOGO_SIZE, Image.Resampling.LANCZOS))
@@ -192,6 +263,15 @@ class LaunchiCubeApp:
 
         self.selected_instance = None
         self.load_instances()
+
+        self.acc_switch_button = tk.Button(self.top_frame, text="Select an Option", command=self.show_menu, bg="#7289DA", fg="white", font=("Arial", 12, "bold"))
+        self.acc_switch_button.pack(pady=10, padx=10, side="right")
+        
+        self.dropdown_window = None
+        
+        accounts_json = json.loads(load_file("accounts.json"))
+        if not accounts_json["Selected Account"] == None:
+            self.select_option(accounts_json["Selected Account"])
 
     def truncate_text(self, text, font, max_width):
         temp_text = text
@@ -233,6 +313,23 @@ class LaunchiCubeApp:
     def start_game(self, instance):
         if instance:
             print(f"Starting game for: {instance['name']}")
+            accounts_json = json.loads(load_file("accounts.json"))
+            if not accounts_json["Selected Account"] == None:
+                selected_account_pass = None
+                for acc in accounts_json["accounts"]:
+                    if acc["name"] == accounts_json["Selected Account"]:
+                        selected_account_pass = acc["password"]
+                        
+                change_option(instance['dir'], "launcher-cc-username", accounts_json["Selected Account"])
+                change_option(instance['dir'], "launcher-dc-username", accounts_json["Selected Account"])
+                change_option(instance['dir'], "launcher-cc-password", selected_account_pass)
+                delete_option(instance['dir'], "launcher-session")
+                delete_option(instance['dir'], "launcher-server")
+                delete_option(instance['dir'], "launcher-ip")
+                delete_option(instance['dir'], "launcher-port")
+                delete_option(instance['dir'], "launcher-mppass")
+                delete_option(instance['dir'], "launcher-dc-mppass")
+                
             if sys.platform == "darwin" or sys.platform == "linux":
                 subprocess.run([f"clients/{instance['ver']}"], cwd=f'instances/{instance['dir']}/')
             else:
@@ -306,6 +403,32 @@ class LaunchiCubeApp:
             if col >= num_columns:
                 col = 0
                 row += 1
+                
+    def load_accounts(self):
+        accounts_json = json.loads(load_file("accounts.json"))
+        
+        self.options = []
+        for acc in accounts_json["accounts"]:
+            self.options.append(acc["name"])
+        
+        self.options.append("Add Account")
+
+        self.images = {}
+        for opt in self.options:
+            if opt != "Add Account":
+                r = requests.get(f"https://cdn.classicube.net/skin/{opt}.png")
+                try:
+                    img = Image.open(io.BytesIO(r.content))
+                except IOError:
+                    r = requests.get(f"https://Tycho10101.is-a.dev/Assets/char.png")
+                    img = Image.open(io.BytesIO(r.content))
+                width, height = img.size
+                mult = width/64
+                img2 = img.crop((40*mult, 8*mult, 48*mult, 16*mult)).convert().convert('RGBA')
+                img = img.crop((8*mult, 8*mult, 16*mult, 16*mult)).convert("RGB")
+                img.paste(img2, (0,0), img2) 
+                self.images[opt] = ImageTk.PhotoImage(img.resize((30, 30), Image.Resampling.NEAREST))
+        
 
     def open_add_instance(self):
         add_window = tk.Toplevel(self.root)
@@ -345,8 +468,89 @@ class LaunchiCubeApp:
 
         tk.Button(add_window, text="Create", command=create_instance, bg="#7289DA", fg="white").pack(pady=10)
 
+    def select_option(self, option):
+        if not option == "Add Account":
+            if option in self.images:
+                self.acc_switch_button.config(text=option, image=self.images[option], compound="left")
+            else:
+                self.acc_switch_button.config(text=option, image='', compound="left")
+            accounts_json = json.loads(load_file("accounts.json"))
+            accounts_json["Selected Account"] = option
+            save_file("accounts.json", json.dumps(accounts_json))
+        else:
+            self.open_add_account()
+        self.close_menu()
+
+    def show_menu(self):
+        self.close_menu()
+
+        self.dropdown_window = tk.Toplevel(self.root)
+        self.dropdown_window.overrideredirect(True)
+        self.update_menu_position()
+
+        for option in self.options:
+            frame = tk.Frame(self.dropdown_window)
+            frame.pack(fill="x")
+
+            if option in self.images:
+                img_label = tk.Label(frame, image=self.images[option], width=30, height=30)
+                img_label.pack(side="left")
+
+            opt_button = tk.Button(frame, text=option, command=lambda opt=option: self.select_option(opt), anchor="w")
+            opt_button.pack(fill="x", expand=True)
+
+        self.root.bind("<Configure>", self.update_menu_position)
+
+    def update_menu_position(self, event=None):
+        if self.dropdown_window:
+            self.dropdown_window.geometry(f"150x{35*len(self.options)}+{self.acc_switch_button.winfo_rootx()}+{self.acc_switch_button.winfo_rooty() + self.acc_switch_button.winfo_height()}")
+
+    def close_menu(self):
+        if self.dropdown_window:
+            self.dropdown_window.destroy()
+            self.dropdown_window = None
+            self.root.unbind("<Configure>")
+            
+    def open_add_account(self):
+        add_window = tk.Toplevel(self.root)
+        add_window.title("Add Account")
+        add_window.geometry("300x250")
+        add_window.configure(bg="#2C2F33")
+
+        tk.Label(add_window, text="Username:", bg="#2C2F33", fg="white").pack(pady=5)
+        name_entry = tk.Entry(add_window)
+        name_entry.pack(pady=5)
+        
+        tk.Label(add_window, text="Password:", bg="#2C2F33", fg="white").pack(pady=5)
+        password_entry = tk.Entry(add_window, show="•")
+        password_entry.pack(pady=5)
+        
+        status = tk.Label(add_window, text="", bg="#2C2F33", fg="red")
+        status.pack(pady=5)
+
+        def create_account():
+            name = name_entry.get().strip()
+            password = password_entry.get().strip()
+            login = login_to_cc(name, password)
+            if name and password and not username_exists(name) and login[0]:
+                save_account(login[1], password)
+                self.load_accounts()
+                self.select_option(login[1])
+                add_window.destroy()
+            elif not name and not password:
+                status.config(text = "No Username or Password")
+            elif not name:
+                status.config(text = "No Username")
+            elif not password:
+                status.config(text = "No Password")
+            elif username_exists(name):
+                status.config(text = "Account already exists")
+            else:
+                status.config(text = "Failed to login")
+                
+        tk.Button(add_window, text="Login", command=create_account, bg="#7289DA", fg="white").pack(pady=10)
+
 if __name__ == "__main__":
     root = tk.Tk()
     app = LaunchiCubeApp(root)
-    root.mainloop()
-    
+    root.mainloop()  
