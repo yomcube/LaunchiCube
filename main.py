@@ -53,24 +53,20 @@ def ensure_needed_files():
         r = requests.get("https://raw.githubusercontent.com/Tycho10101/LaunchiCube/refs/heads/main/logo.png")
         with open("logo.png", "wb") as f:
             f.write(r.content)
-            
-    if not os.path.isfile("accounts.json"):
-        with open("accounts.json", "w") as f:
-            f.write('{"accounts": [], "Selected Account": null}')
 
-    if not os.path.isdir("instances/"):
-        os.mkdir("instances/")
+    def ensure_dir(name):
+        if not os.path.isdir(name):
+            os.mkdir(name)
+    def ensure_file(name, contents=""):
+        if not os.path.isfile(name):
+            with open(name, "w") as f:
+                f.write(contents)
 
-    if not os.path.isfile("instances/index.json"):
-        with open("instances/index.json", "w") as f:
-            f.write("[]")
-            
-    if not os.path.isdir("clients/"):
-        os.mkdir("clients/")
-        
-    if not os.path.isfile("clients/index.json"):
-        with open("clients/index.json", "w") as f:
-            f.write('{"release_ver": "0.0", "dev_ver": 0}')
+    ensure_dir("clients")
+    ensure_dir("instances")
+    ensure_file("accounts.json", '{"accounts": [], "Selected Account": null}')
+    ensure_file("instances/index.json", '[]')
+    ensure_file("clients/index.json", '{"release_ver": "0.0", "dev_ver": 0}')
             
 class updater:
     def update_clients():
