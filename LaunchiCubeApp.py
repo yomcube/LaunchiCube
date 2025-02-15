@@ -9,7 +9,6 @@ import sys
 import tkinter as tk
 from tkinter import ttk
 
-from instance import *
 from utils import *
 
 LOGO_SIZE = (150, 150)
