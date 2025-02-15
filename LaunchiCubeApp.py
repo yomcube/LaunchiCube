@@ -118,11 +118,9 @@ class LaunchiCubeApp:
                 delete_option(instance['dir'], "launcher-port")
                 delete_option(instance['dir'], "launcher-mppass")
                 delete_option(instance['dir'], "launcher-dc-mppass")
-                
-            if sys.platform == "darwin" or sys.platform == "linux":
-                subprocess.run([f"clients/{instance['ver']}"], cwd=f'instances/{instance['dir']}/')
-            else:
-                subprocess.run([f"clients/{instance['ver']}.exe"], cwd=f'instances/{instance['dir']}/')
+            
+            ext = '.exe' if PLAT_WIN else ''
+            subprocess.run([f"clients/{instance['ver']}{ext}"], cwd=f'instances/{instance['dir']}/')
 
     def update_right_bar(self, instance):
         for widget in self.right_frame.winfo_children():

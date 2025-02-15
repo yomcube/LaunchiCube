@@ -28,7 +28,7 @@ class Updater:
     def download_release():
         is_64bit = sys.maxsize > 2**32
         
-        if sys.platform == "win32" or sys.platform == "cygwin":
+        if PLAT_WIN:
             url = f"https://cdn.classicube.net/client/release/win{'64' if is_64bit else '32'}/ClassiCube.zip"
             r = requests.get(url)
 
@@ -42,21 +42,9 @@ class Updater:
             os.rmdir("clients/temp/ClassiCube")
             os.rmdir("clients/temp/")
         
-        elif sys.platform == "darwin":
-            url = f"https://cdn.classicube.net/client/release/osx{'64' if is_64bit else '32'}/ClassiCube.tar.gz"
-            r = requests.get(url)
-                
-            t = TarFile(io.BytesIO(r.content))
-            t.extract("ClassiCube/ClassiCube", path="clients/temp/")
-            if os.path.isfile("clients/Latest Stable Version"):
-                os.remove("clients/Latest Stable Version")
-            os.rename("clients/temp/ClassiCube/ClassiCube", "clients/Latest Stable Version")
-            t.close()
-            os.rmdir("clients/temp/ClassiCube")
-            os.rmdir("clients/temp/")
-            
-        elif sys.platform == "linux":
-            url = f"https://cdn.classicube.net/client/release/nix{'64' if is_64bit else '32'}/ClassiCube.tar.gz"
+        else:
+            cc_os = 'osx' if PLAT_MAC else 'nix'
+            url = f"https://cdn.classicube.net/client/release/{cc_os}{'64' if is_64bit else '32'}/ClassiCube.tar.gz"
             r = requests.get(url)
                 
             t = TarFile(io.BytesIO(r.content))

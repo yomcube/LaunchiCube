@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from ctypes import windll
 import os
 from requests import get
 import tkinter as tk
@@ -11,10 +10,9 @@ from utils import *
 
 print("Starting...")
 
-try:
-    windll.shcore.SetProcessDpiAwareness(1)
-finally:
-    pass
+if PLAT_WIN:
+    ctypes = __import__('ctypes')
+    ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
 def ensure_needed_files():
     if not os.path.isfile("logo.png"):

@@ -3,6 +3,11 @@ import json
 from os.path import exists, splitext, join
 from re import sub
 from requests import Session
+from sys import platform
+
+PLAT_WIN = platform == 'win32' or platform == 'cygwin'
+PLAT_NIX = platform == 'linux'
+PLAT_MAC = platform == 'darwin'
 
 def load_file(filename):
     if exists(filename):
