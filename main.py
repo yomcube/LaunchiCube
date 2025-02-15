@@ -1,18 +1,21 @@
-from PIL import Image, ImageTk
-import tkinter as tk
-from tkinter import ttk
-import os
-import json
-import re
-from zipfile import ZipFile
-from tarfile import TarFile
+#!/usr/bin/env python3
+
+import base64
+import ctypes
 import io
-import requests
+import json
 import math
+import os
+import re
+import requests
 import subprocess
 import sys
-import ctypes
-import base64
+from tarfile import TarFile
+from zipfile import ZipFile
+# UI
+import tkinter as tk
+from tkinter import ttk
+from PIL import Image, ImageTk
 
 try:
     import ctypes.wintypes
@@ -68,7 +71,7 @@ def ensure_needed_files():
     ensure_file("instances/index.json", '[]')
     ensure_file("clients/index.json", '{"release_ver": "0.0", "dev_ver": 0}')
             
-class updater:
+class Updater:
     def update_clients():
         r = requests.get("https://cdn.classicube.net/client/builds.json")
         f = json.loads(load_file("clients/index.json"))
@@ -77,13 +80,13 @@ class updater:
             print("Downloading Latest Release Version")
             f["release_ver"] = json.loads(r.text)["release_version"]
             save_file("clients/index.json", json.dumps(f))
-            updater.download_release()
+            Updater.download_release()
         
         if not json.loads(r.text)["latest_ts"] == f["dev_ver"]:
             print("Downloading Latest Dev Version")
             f["dev_ver"] = json.loads(r.text)["latest_ts"]
             save_file("clients/index.json", json.dumps(f))
-            updater.download_dev()
+            Updater.download_dev()
              
     def download_release():
         is_64bit = sys.maxsize > 2**32
@@ -221,7 +224,7 @@ def delete_option(instance, option):
     save_file(f"instances/{instance}/options.txt", "\n".join(f))
 
 ensure_needed_files()
-updater.update_clients()
+Updater.update_clients()
 class LaunchiCubeApp:
     def __init__(self, root):
         self.root = root
@@ -416,7 +419,7 @@ class LaunchiCubeApp:
                 try:
                     img = Image.open(io.BytesIO(r.content))
                 except IOError:
-                    r = requests.get(f"https://Tycho10101.is-a.dev/Assets/char.png")
+                    r = requests.get("https://Tycho10101.is-a.dev/Assets/char.png")
                     img = Image.open(io.BytesIO(r.content))
                 width, height = img.size
                 mult = width/64
