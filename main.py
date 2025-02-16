@@ -4,7 +4,7 @@ import os
 from requests import get
 import tkinter as tk
 
-from LaunchiCubeApp import LaunchiCubeApp
+from gui import gui
 from updater import Updater
 from utils import *
 
@@ -39,5 +39,5 @@ if __name__ == "__main__":
     Updater.update_clients()
 
     root = tk.Tk()
-    app = LaunchiCubeApp(root)
+    app = gui(root)
     root.mainloop()  

@@ -15,7 +15,7 @@ LOGO_SIZE = (150, 150)
 MAX_TEXT_WIDTH = 140
 last_instances_columns = 1
 
-class LaunchiCubeApp:
+class gui:
     def __init__(self, root):
         self.root = root
         self.root.title("LaunchiCube")
@@ -319,7 +319,7 @@ class LaunchiCubeApp:
             name = name_entry.get().strip()
             password = password_entry.get().strip()
             login = login_to_cc(name, password)
-            if name and password and not username_exists(name) and login[0]:
+            if name and password and not username_exists(login[1]) and login[0]:
                 save_account(login[1], password)
                 self.load_accounts()
                 self.select_option(login[1])
@@ -330,7 +330,7 @@ class LaunchiCubeApp:
                 status.config(text = "No Username")
             elif not password:
                 status.config(text = "No Password")
-            elif username_exists(name):
+            elif username_exists(login[1]):
                 status.config(text = "Account already exists")
             else:
                 status.config(text = "Failed to login")
