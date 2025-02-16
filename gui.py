@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tkinter as tk
 from tkinter import ttk
+import shutil
 
 from utils import *
 
@@ -45,6 +46,8 @@ class gui:
         self.right_name_label = tk.Label(self.right_frame, bg="#3C3F41", fg="white", font=("Arial", 14, "bold"))
         self.play_button = tk.Button(self.right_frame, text="Play", bg="#4CAF50", fg="white", font=("Arial", 12, "bold"),
                                      command=lambda: self.start_game(self.selected_instance), state="disabled")
+        self.delete_button = tk.Button(self.right_frame, text="Delete", bg="#AF4C50", fg="white", font=("Arial", 12, "bold"),
+                                     command=lambda: self.delete_instance(self.selected_instance), state="disabled")                                     
 
         self.main_frame = tk.Frame(root, bg="#23272A")
         self.main_frame.pack(expand=True, fill="both")
@@ -98,6 +101,8 @@ class gui:
 
         self.play_button["state"] = "normal"
         self.play_button.config(command=lambda: self.start_game(instance))
+        self.delete_button["state"] = "normal"
+        self.delete_button.config(command=lambda: self.delete_instance(instance))
 
     def start_game(self, instance):
         if instance:
@@ -120,7 +125,10 @@ class gui:
                 delete_option(instance['dir'], "launcher-dc-mppass")
             
             ext = '.exe' if PLAT_WIN else ''
-            subprocess.run([f"clients/{instance['ver']}{ext}"], cwd=f'instances/{instance['dir']}/')
+            quote = "" if PLAT_WIN else "'"
+            pre = '' if PLAT_WIN else '../../'
+            execute_dir = f"{quote}{pre}clients/{instance['ver']}{ext}{quote}"
+            subprocess.run([execute_dir], cwd=f'instances/{instance['dir']}/', shell=not PLAT_WIN)
 
     def update_right_bar(self, instance):
         for widget in self.right_frame.winfo_children():
@@ -147,6 +155,9 @@ class gui:
         self.play_button = tk.Button(self.right_frame, text="Play", bg="#4CAF50", fg="white",
                                      font=("Arial", 12, "bold"), command=lambda: self.start_game(instance))
         self.play_button.pack(pady=10)
+        self.delete_button = tk.Button(self.right_frame, text="Delete", bg="#AF4C50", fg="white",
+                                     font=("Arial", 12, "bold"), command=lambda: self.delete_instance(instance))
+        self.delete_button.pack(pady=10)
 
     def load_instances(self):
         for widget in self.main_frame.winfo_children():
@@ -215,7 +226,14 @@ class gui:
                 img = img.crop((8*mult, 8*mult, 16*mult, 16*mult)).convert("RGB")
                 img.paste(img2, (0,0), img2) 
                 self.images[opt] = ImageTk.PhotoImage(img.resize((30, 30), Image.Resampling.NEAREST))
-        
+    
+    def delete_instance(self, instance):
+        instances = json.loads(load_file("instances/index.json"))
+        instances.remove(instance)
+        save_file("instances/index.json", json.dumps(instances))
+        shutil.rmtree(f"instances/{instance['dir']}/")
+        self.load_instances()
+        self.update_right_bar(instances[0])
 
     def open_add_instance(self):
         add_window = tk.Toplevel(self.root)

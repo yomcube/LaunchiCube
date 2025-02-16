@@ -1,5 +1,6 @@
 from base64 import b64encode
 import json
+import os
 from os.path import exists, splitext, join
 from re import sub
 from requests import Session
@@ -60,27 +61,28 @@ def delete_option(instance, option):
 
 
 ## Instance utils ##
-try:
-    import ctypes.wintypes
-    crypt32 = ctypes.windll.crypt32
+if PLAT_WIN:
+    try:
+        import ctypes.wintypes
+        crypt32 = ctypes.windll.crypt32
 
-    class DATA_BLOB(ctypes.Structure):
-        _fields_ = [("cbData", ctypes.wintypes.DWORD), ("pbData", ctypes.POINTER(ctypes.c_ubyte))]
+        class DATA_BLOB(ctypes.Structure):
+            _fields_ = [("cbData", ctypes.wintypes.DWORD), ("pbData", ctypes.POINTER(ctypes.c_ubyte))]
 
-    def encrypt_data(data: bytes) -> bytes:
-        blob_in = DATA_BLOB(len(data), ctypes.cast(ctypes.create_string_buffer(data), ctypes.POINTER(ctypes.c_ubyte)))
-        blob_out = DATA_BLOB()
-        
-        if crypt32.CryptProtectData(
-            ctypes.byref(blob_in), None, None, None, None, 0, ctypes.byref(blob_out)
-        ):
-            encrypted_bytes = ctypes.string_at(blob_out.pbData, blob_out.cbData)
-            ctypes.windll.kernel32.LocalFree(blob_out.pbData)
-            return b64encode(encrypted_bytes).decode("utf-8")
-        else:
-            raise RuntimeError(f"Encryption failed. Error Code: {ctypes.windll.kernel32.GetLastError()}")
-finally:
-    pass
+        def encrypt_data(data: bytes) -> bytes:
+            blob_in = DATA_BLOB(len(data), ctypes.cast(ctypes.create_string_buffer(data), ctypes.POINTER(ctypes.c_ubyte)))
+            blob_out = DATA_BLOB()
+            
+            if crypt32.CryptProtectData(
+                ctypes.byref(blob_in), None, None, None, None, 0, ctypes.byref(blob_out)
+            ):
+                encrypted_bytes = ctypes.string_at(blob_out.pbData, blob_out.cbData)
+                ctypes.windll.kernel32.LocalFree(blob_out.pbData)
+                return b64encode(encrypted_bytes).decode("utf-8")
+            else:
+                raise RuntimeError(f"Encryption failed. Error Code: {ctypes.windll.kernel32.GetLastError()}")
+    finally:
+        pass
 
 def getVersions(version_type):
     return ["Latest Stable Version"] if version_type == "stable" else ["Latest Dev Version"]

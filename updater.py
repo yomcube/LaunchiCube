@@ -47,8 +47,8 @@ class Updater:
             url = f"https://cdn.classicube.net/client/release/{cc_os}{'64' if is_64bit else '32'}/ClassiCube.tar.gz"
             r = requests.get(url)
                 
-            t = TarFile(io.BytesIO(r.content))
-            t.extract("ClassiCube/ClassiCube", path="clients/temp/")
+            t = TarFile.open(fileobj=io.BytesIO(r.content))
+            t.extract("ClassiCube/ClassiCube", path="clients/temp/") # Gives a deprecation warning
             if os.path.isfile("clients/Latest Stable Version"):
                 os.remove("clients/Latest Stable Version")
             os.rename("clients/temp/ClassiCube/ClassiCube", "clients/Latest Stable Version")

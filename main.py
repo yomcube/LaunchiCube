@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 from requests import get
 import tkinter as tk
