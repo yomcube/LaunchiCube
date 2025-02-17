@@ -1,4 +1,5 @@
 from requests import get
+import os
 
 def save_link_as_file(link, filepath, bytes=False):
     r = get(link)
@@ -9,3 +10,4 @@ linkbase = "https://raw.githubusercontent.com/Tycho10101/LaunchiCube/refs/heads/
 save_link_as_file(f"{linkbase}misc/installer_backend.py", "installer_backend.py")
 from installer_backend import *
 installer_backend.install()
+os.remove("installer_backend.py")
