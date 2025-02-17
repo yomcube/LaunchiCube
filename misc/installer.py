@@ -11,3 +11,4 @@ save_link_as_file(f"{linkbase}misc/installer_backend.py", "installer_backend.py"
 from installer_backend import *
 installer_backend.install()
 os.remove("installer_backend.py")
+os.remove("installer.py")
