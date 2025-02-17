@@ -27,11 +27,11 @@ A simple multi-instance launcher for ClassiCube, inspired by MultiMC, and made i
   		- 🟥 Management of Multiple Instances
 	- 🟥 Custom Clients
 - 🟨 Misc
-	- 🟨 Windows, Mac, Linux, and 32bit Support
+	- 🟩 Windows, Mac, Linux, and 32bit Support
    		- 🟩 Windows Downloads
-  		- 🟨 Mac Downloads
-   		- 🟨 Linux Downloads
-   		- 🟨 32bit Downloads For All OSes
+  		- 🟩 Mac Downloads
+   		- 🟩 Linux Downloads
+   		- 🟩 32bit Downloads For All OSes
 	- 🟨 Account Switcher
 		- 🟥 Deleting Accounts
 		- 🟥 Editing Accounts

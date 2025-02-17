@@ -6,6 +6,10 @@ from gui import gui
 from updater import Updater
 from utils import *
 
+if not PLAT_WIN and not PLAT_MAC and not PLAT_NIX:
+    print("OS is not supported!")
+    quit()
+
 print("Starting...")
 
 if PLAT_WIN:
