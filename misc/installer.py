@@ -8,6 +8,4 @@ def save_link_as_file(link, filepath, bytes=False):
 linkbase = "https://raw.githubusercontent.com/Tycho10101/LaunchiCube/refs/heads/main/"
 save_link_as_file(f"{linkbase}misc/installer_backend.py", "installer.py")
 from installer_backend import *
-print("e")
 installer_backend.install()
-print("e")
