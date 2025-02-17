@@ -61,7 +61,7 @@ class Updater:
         ext = '.exe' if PLAT_WIN else ''
         if PLAT_WIN:
             r = requests.get(f"https://nightly.link/ClassiCube/ClassiCube/workflows/build_windows/master/ClassiCube-Win{'64' if is_64bit else '32'}-Direct3D9.exe.zip")
-            cc_os = 'win'
+            cc_os = 'w'
         elif PLAT_MAC:
             r = requests.get(f"https://nightly.link/ClassiCube/ClassiCube/workflows/build_mac{'64' if is_64bit else '32'}/master/ClassiCube-mac{'64' if is_64bit else '32'}-OpenGL.zip")
             cc_os = 'mac'
@@ -73,7 +73,7 @@ class Updater:
         z.extractall(path="clients/temp/")
         if os.path.isfile(f"clients/Latest Dev Version{ext}"):
             os.remove(f"clients/Latest Dev Version{ext}")
-        filename = f"cc-{cc_os}{'64' if is_64bit else '32'}-{'d3d9' if PLAT_WIN else 'gl1'}"
-        os.rename("clients/temp/cc-w64-d3d9.exe", f"clients/Latest Dev Version{ext}")
+        filename = f"cc-{cc_os}{'64' if is_64bit else '32'}-{'d3d9' if PLAT_WIN else 'gl1'}{ext}"
+        os.rename(f"clients/temp/{filename}", f"clients/Latest Dev Version{ext}")
         z.close()
         os.rmdir("clients/temp/")
