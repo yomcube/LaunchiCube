@@ -6,6 +6,6 @@ def save_link_as_file(link, filepath, bytes=False):
         f.write(r.content if bytes else r.text)
 
 linkbase = "https://raw.githubusercontent.com/Tycho10101/LaunchiCube/refs/heads/main/"
-save_link_as_file(f"{linkbase}misc/installer_backend.py", "installer.py")
+save_link_as_file(f"{linkbase}misc/installer_backend.py", "installer_backend.py")
 from installer_backend import *
 installer_backend.install()
