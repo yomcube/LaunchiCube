@@ -226,11 +226,11 @@ class gui:
         for acc in accounts_json["accounts"]:
             self.options.append(acc["name"])
         
-        self.options.append("Add Account")
+        self.options.append("Manage Accounts")
 
         self.images = {}
         for opt in self.options:
-            if opt != "Add Account":
+            if opt != "Manage Accounts":
                 r = requests.get(f"https://cdn.classicube.net/skin/{opt}.png")
                 try:
                     img = Image.open(io.BytesIO(r.content))
@@ -291,7 +291,7 @@ class gui:
         tk.Button(add_window, text="Create", command=create_instance, bg="#7289DA", fg="white").pack(pady=10)
 
     def select_option(self, option):
-        if not option == "Add Account":
+        if not option == "Manage Accounts":
             if option in self.images:
                 self.acc_switch_button.config(text=option, image=self.images[option], compound="left")
             else:
@@ -300,7 +300,7 @@ class gui:
             accounts_json["Selected Account"] = option
             save_file("accounts.json", json.dumps(accounts_json))
         else:
-            self.open_add_account()
+            self.open_account_manager()
         self.close_menu()
 
     def show_menu(self):
@@ -332,7 +332,45 @@ class gui:
             self.dropdown_window.destroy()
             self.dropdown_window = None
             self.root.unbind("<Configure>")
+    
+    def open_account_manager(self):
+        add_window = tk.Toplevel(self.root)
+        add_window.title("Account Manager")
+        add_window.geometry("600x375")
+        add_window.configure(bg="#2C2F33")
+        left_frame = tk.Frame(add_window, bg="#3C3F41", width=150)
+        left_frame.pack_propagate(False)
+        left_frame.pack(fill="y", side="left")
+        listbox = tk.Listbox(add_window, bg="#2C2F33", fg="#FFFFFF", bd=0, highlightthickness=0)
+        listbox.pack(fill="both", expand=True, pady=5, padx=5)
+        listbox.yview
+        for i in range(0, len(self.options) - 1):
+            listbox.insert(i + 1, self.options[i])
+        
+        def add_account():
+            add_window.destroy()
+            self.open_add_account()
             
+        def del_account():
+            selected_index = listbox.curselection()
+            if selected_index:
+                selected_value = listbox.get(selected_index[0])
+                f = json.loads(load_file("accounts.json"))
+                
+                for i in f["accounts"]:
+                    if i["name"] == selected_value:
+                        acc = i
+                        
+                f["accounts"].remove(acc)
+                
+                save_file("accounts.json", json.dumps(f))
+                self.load_accounts()
+                self.select_option(f["accounts"][0]["name"])
+                add_window.destroy()
+        
+        tk.Button(left_frame, text="Add Account", command=add_account, bg="#7289DA", fg="white").pack(pady=10, fill="x", padx=10)
+        tk.Button(left_frame, text="Delete Account", command=del_account, bg="#7289DA", fg="white").pack(pady=10, fill="x", padx=10)
+    
     def open_add_account(self):
         add_window = tk.Toplevel(self.root)
         add_window.title("Add Account")
