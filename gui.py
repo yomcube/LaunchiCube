@@ -4,6 +4,7 @@ import math
 import os
 import requests
 import subprocess
+from sys import exit as sysexit
 import tkinter as tk
 from tkinter import ttk
 import shutil
@@ -59,7 +60,8 @@ class gui:
         self.selected_instance = None
         self.load_instances()
 
-        self.acc_switch_button = tk.Button(self.top_frame, text="Select an Option", command=self.show_menu, bg="#7289DA", fg="white", font=("Arial", 12, "bold"))
+        self.acc_switch_button = tk.Button(self.top_frame, text="Select an Option", command=self.show_menu,
+                                           bg="#7289DA", fg="white", font=("Arial", 12, "bold"))
         self.acc_switch_button.pack(pady=10, padx=10, side="right")
         
         self.dropdown_window = None
@@ -90,10 +92,10 @@ class gui:
         last_instances_columns = instances_columns
         
     def update(self):
-        def save_link_as_file(link, filepath, bytes=False):
+        def save_link_as_file(link, filepath, by=False):
             r = get(link)
-            with open(filepath, f"w{'b' if bytes else ''}") as f:
-                f.write(r.content if bytes else r.text)
+            with open(filepath, f"w{'b' if by else ''}") as f:
+                f.write(r.content if by else r.text)
 
         linkbase = "https://raw.githubusercontent.com/Tycho10101/LaunchiCube/refs/heads/main/"
         save_link_as_file(f"{linkbase}misc/installer_backend.py", "installer_backend.py")
@@ -101,7 +103,7 @@ class gui:
         installer_backend.install()
         os.remove("installer_backend.py")
         subprocess.Popen(["python", "main.py"])
-        quit()
+        sysexit()
 
     def select_instance(self, instance):
         logo_path = f"instances/{instance['dir']}/logo.png"
