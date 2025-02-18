@@ -2,13 +2,13 @@ import io
 import json
 import math
 import os
-from PIL import Image, ImageTk
 import requests
 import subprocess
-import sys
 import tkinter as tk
 from tkinter import ttk
 import shutil
+
+from PIL import Image, ImageTk
 from requests import get
 
 from utils import *
@@ -50,7 +50,7 @@ class gui:
         self.play_button = tk.Button(self.right_frame, text="Play", bg="#4CAF50", fg="white", font=("Arial", 12, "bold"),
                                      command=lambda: self.start_game(self.selected_instance), state="disabled")
         self.delete_button = tk.Button(self.right_frame, text="Delete", bg="#AF4C50", fg="white", font=("Arial", 12, "bold"),
-                                     command=lambda: self.delete_instance(self.selected_instance), state="disabled")                                     
+                                     command=lambda: self.delete_instance(self.selected_instance), state="disabled")
 
         self.main_frame = tk.Frame(root, bg="#23272A")
         self.main_frame.pack(expand=True, fill="both")
@@ -125,7 +125,7 @@ class gui:
         if instance:
             print(f"Starting game for: {instance['name']}")
             accounts_json = json.loads(load_file("accounts.json"))
-            if not accounts_json["Selected Account"] == None:
+            if not accounts_json["Selected Account"] is None:
                 selected_account_pass = None
                 for acc in accounts_json["accounts"]:
                     if acc["name"] == accounts_json["Selected Account"]:
@@ -145,7 +145,7 @@ class gui:
             quote = "" if PLAT_WIN else "'"
             pre = '' if PLAT_WIN else '../../'
             execute_dir = f"{quote}{pre}clients/{instance['ver']}{ext}{quote}"
-            subprocess.run([execute_dir], cwd=f'instances/{instance['dir']}/', shell=not PLAT_WIN)
+            subprocess.run([execute_dir], cwd=f'instances/{instance['dir']}/', shell=not PLAT_WIN, check=False)
 
     def update_right_bar(self, instance):
         for widget in self.right_frame.winfo_children():
@@ -237,7 +237,7 @@ class gui:
                 except IOError:
                     r = requests.get("https://Tycho10101.is-a.dev/Assets/char.png")
                     img = Image.open(io.BytesIO(r.content))
-                width, height = img.size
+                width = img.size[0]
                 mult = width/64
                 img2 = img.crop((40*mult, 8*mult, 48*mult, 16*mult)).convert().convert('RGBA')
                 img = img.crop((8*mult, 8*mult, 16*mult, 16*mult)).convert("RGB")
@@ -323,7 +323,7 @@ class gui:
 
         self.root.bind("<Configure>", self.update_menu_position)
 
-    def update_menu_position(self, event=None):
+    def update_menu_position(self):
         if self.dropdown_window:
             self.dropdown_window.geometry(f"150x{35*len(self.options)}+{self.acc_switch_button.winfo_rootx()}+{self.acc_switch_button.winfo_rooty() + self.acc_switch_button.winfo_height()}")
 
@@ -343,7 +343,6 @@ class gui:
         left_frame.pack(fill="y", side="left")
         listbox = tk.Listbox(add_window, bg="#2C2F33", fg="#FFFFFF", bd=0, highlightthickness=0)
         listbox.pack(fill="both", expand=True, pady=5, padx=5)
-        listbox.yview
         for i in range(0, len(self.options) - 1):
             listbox.insert(i + 1, self.options[i])
         
