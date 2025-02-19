@@ -2,7 +2,6 @@ import io
 import json
 import math
 import os
-import requests
 import subprocess
 from sys import exit as sysexit
 import tkinter as tk
@@ -18,7 +17,7 @@ LOGO_SIZE = (150, 150)
 MAX_TEXT_WIDTH = 140
 last_instances_columns = 1
 
-class gui:
+class Gui:
     def __init__(self, root):
         self.root = root
         self.root.title("LaunchiCube")
@@ -67,7 +66,7 @@ class gui:
         self.dropdown_window = None
         
         accounts_json = json.loads(load_file("accounts.json"))
-        if not accounts_json["Selected Account"] == None:
+        if not accounts_json["Selected Account"] is None:
             self.select_option(accounts_json["Selected Account"])
 
     def truncate_text(self, text, font, max_width):
@@ -81,7 +80,8 @@ class gui:
             test_label.update_idletasks()
 
         return temp_text + "..." if temp_text != text else text
-
+    
+    # pylint: disable-next=unused-argument
     def on_resize(self, event=None):
         global last_instances_columns
         instances_columns = math.floor(self.main_frame.winfo_width()/195)
@@ -93,13 +93,13 @@ class gui:
         
     def update(self):
         def save_link_as_file(link, filepath, by=False):
-            r = get(link)
+            r = get(link, timeout=60)
             with open(filepath, f"w{'b' if by else ''}") as f:
                 f.write(r.content if by else r.text)
 
         linkbase = "https://raw.githubusercontent.com/Tycho10101/LaunchiCube/refs/heads/main/"
         save_link_as_file(f"{linkbase}misc/installer_backend.py", "installer_backend.py")
-        from installer_backend import installer_backend
+        installer_backend = __import__('installer_backend')
         installer_backend.install()
         os.remove("installer_backend.py")
         subprocess.Popen(["python", "main.py"])
@@ -146,7 +146,7 @@ class gui:
             ext = '.exe' if PLAT_WIN else ''
             quote = "" if PLAT_WIN else "'"
             pre = '' if PLAT_WIN else '../../'
-            execute_dir = f"{quote}{pre}clients/{instance['ver']}{ext}{quote}"
+            execute_dir = f"'{pre}clients/{instance['ver']}{ext}'"
             subprocess.run([execute_dir], cwd=f'instances/{instance['dir']}/', shell=not PLAT_WIN, check=False)
 
     def update_right_bar(self, instance):
@@ -233,11 +233,11 @@ class gui:
         self.images = {}
         for opt in self.options:
             if opt != "Manage Accounts":
-                r = requests.get(f"https://cdn.classicube.net/skin/{opt}.png")
+                r = get(f"https://cdn.classicube.net/skin/{opt}.png", timeout=60)
                 try:
                     img = Image.open(io.BytesIO(r.content))
                 except IOError:
-                    r = requests.get("https://Tycho10101.is-a.dev/Assets/char.png")
+                    r = get("https://Tycho10101.is-a.dev/Assets/char.png", timeout=60)
                     img = Image.open(io.BytesIO(r.content))
                 width = img.size[0]
                 mult = width/64
@@ -327,7 +327,9 @@ class gui:
 
     def update_menu_position(self):
         if self.dropdown_window:
-            self.dropdown_window.geometry(f"150x{35*len(self.options)}+{self.acc_switch_button.winfo_rootx()}+{self.acc_switch_button.winfo_rooty() + self.acc_switch_button.winfo_height()}")
+            self.dropdown_window.geometry(
+            f"150x{35*len(self.options)}+{self.acc_switch_button.winfo_rootx()}+" +
+                str(self.acc_switch_button.winfo_rooty() + self.acc_switch_button.winfo_height()))
 
     def close_menu(self):
         if self.dropdown_window:
@@ -369,8 +371,10 @@ class gui:
                 self.select_option(f["accounts"][0]["name"])
                 add_window.destroy()
         
-        tk.Button(left_frame, text="Add Account", command=add_account, bg="#7289DA", fg="white").pack(pady=10, fill="x", padx=10)
-        tk.Button(left_frame, text="Delete Account", command=del_account, bg="#7289DA", fg="white").pack(pady=10, fill="x", padx=10)
+        tk.Button(left_frame, text="Add Account", command=add_account, bg="#7289DA", fg="white") \
+            .pack(pady=10, fill="x", padx=10)
+        tk.Button(left_frame, text="Delete Account", command=del_account, bg="#7289DA", fg="white") \
+            .pack(pady=10, fill="x", padx=10)
     
     def open_add_account(self):
         add_window = tk.Toplevel(self.root)

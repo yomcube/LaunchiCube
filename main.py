@@ -1,14 +1,16 @@
 import os
-from requests import get
+from sys import exit as sysexit
 import tkinter as tk
 
-from gui import gui
-from updater import Updater
-from utils import *
+from requests import get
 
-if not PLAT_WIN and not PLAT_MAC and not PLAT_NIX:
+from gui import Gui
+from updater import Updater
+from utils import PLAT_WIN, PLAT_NIX, PLAT_MAC
+
+if not PLAT_WIN and not PLAT_NIX and not PLAT_MAC:
     print("OS is not supported!")
-    quit()
+    sysexit(1)
 
 print("Starting...")
 
@@ -18,7 +20,7 @@ if PLAT_WIN:
 
 def ensure_needed_files():
     if not os.path.isfile("logo.png"):
-        r = get("https://raw.githubusercontent.com/Tycho10101/LaunchiCube/refs/heads/main/logo.png")
+        r = get("https://raw.githubusercontent.com/Tycho10101/LaunchiCube/refs/heads/main/logo.png", timeout=60)
         with open("logo.png", "wb") as f:
             f.write(r.content)
 
@@ -42,5 +44,5 @@ if __name__ == "__main__":
     Updater.update_clients()
 
     root = tk.Tk()
-    app = gui(root)
+    app = Gui(root)
     root.mainloop()

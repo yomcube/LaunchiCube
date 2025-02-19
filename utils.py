@@ -3,10 +3,11 @@ import json
 import os
 from os.path import exists, splitext, join
 from re import sub
-from requests import Session
 from sys import platform
 
-PLAT_WIN = platform == 'win32' or platform == 'cygwin'
+from requests import Session
+
+PLAT_WIN = platform in ('win32' or 'cygwin')
 PLAT_NIX = platform == 'linux'
 PLAT_MAC = platform == 'darwin'
 
@@ -40,7 +41,7 @@ def change_option(instance, option, value):
         if f[i].startswith(f"{option}="):
             where = i
     
-    if where == None:
+    if where is None:
         f.append(f"{option}={value}")
     else:
         f[where] = f"{option}={value}"
@@ -54,7 +55,7 @@ def delete_option(instance, option):
         if f[i].startswith(f"{option}="):
             where = i
     
-    if not where == None:
+    if not where is None:
         del f[where]
     
     save_file(f"instances/{instance}/options.txt", "\n".join(f))
@@ -79,8 +80,7 @@ if PLAT_WIN:
                 encrypted_bytes = ctypes.string_at(blob_out.pbData, blob_out.cbData)
                 ctypes.windll.kernel32.LocalFree(blob_out.pbData)
                 return b64encode(encrypted_bytes).decode("utf-8")
-            else:
-                raise RuntimeError(f"Encryption failed. Error Code: {ctypes.windll.kernel32.GetLastError()}")
+            raise RuntimeError(f"Encryption failed. Error Code: {ctypes.windll.kernel32.GetLastError()}")
     finally:
         pass
 
@@ -107,7 +107,7 @@ def save_account(username, password):
 
 def login_to_cc(username, password):
     session = Session()
-    r = session.get("https://www.classicube.net/api/login/")
+    r = session.get("https://www.classicube.net/api/login/", timeout=60)
     myobj = {"username": username, "password": password, "token": r.json()["token"]}
     x = session.post("https://www.classicube.net/api/login/", data=myobj)
     return [x.json()["authenticated"],x.json()["username"]]

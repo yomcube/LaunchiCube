@@ -1,10 +1,11 @@
 import io
 import json
-import requests
 import os
 import sys
 from tarfile import TarFile
 from zipfile import ZipFile
+
+import requests
 
 from utils import *
 
