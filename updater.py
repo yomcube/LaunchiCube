@@ -5,13 +5,13 @@ import sys
 from tarfile import TarFile
 from zipfile import ZipFile
 
-import requests
+from requests import get
 
 from utils import *
 
 class Updater:
     def update_clients():
-        r = requests.get("https://cdn.classicube.net/client/builds.json")
+        r = get("https://cdn.classicube.net/client/builds.json", timeout=60)
         f = json.loads(load_file("clients/index.json"))
         
         if not json.loads(r.text)["release_version"] == f["release_ver"]:
@@ -27,11 +27,11 @@ class Updater:
             Updater.download_dev()
              
     def download_release():
-        is_64bit = sys.maxsize > 2**32
-        
+        bits = '64' if sys.maxsize > 2**32 else '32'
+        base = "https://cdn.classicube.net/client/release"
         if PLAT_WIN:
-            url = f"https://cdn.classicube.net/client/release/win{'64' if is_64bit else '32'}/ClassiCube.zip"
-            r = requests.get(url)
+            url = f"{base}/win{bits}/ClassiCube.zip"
+            r = get(url, timeout=60)
 
 
             z = ZipFile(io.BytesIO(r.content))
@@ -40,13 +40,11 @@ class Updater:
                 os.remove("clients/Latest Stable Version.exe")
             os.rename("clients/temp/ClassiCube/ClassiCube.exe", "clients/Latest Stable Version.exe")
             z.close()
-            os.rmdir("clients/temp/ClassiCube")
-            os.rmdir("clients/temp/")
         
         else:
             cc_os = 'osx' if PLAT_MAC else 'nix'
-            url = f"https://cdn.classicube.net/client/release/{cc_os}{'64' if is_64bit else '32'}/ClassiCube.tar.gz"
-            r = requests.get(url)
+            url = f"{base}/{cc_os}{bits}/ClassiCube.tar.gz"
+            r = get(url, timeout=60)
                 
             t = TarFile.open(fileobj=io.BytesIO(r.content))
             t.extract("ClassiCube/ClassiCube", path="clients/temp/") # Gives a deprecation warning
@@ -54,27 +52,29 @@ class Updater:
                 os.remove("clients/Latest Stable Version")
             os.rename("clients/temp/ClassiCube/ClassiCube", "clients/Latest Stable Version")
             t.close()
-            os.rmdir("clients/temp/ClassiCube")
-            os.rmdir("clients/temp/")
+        
+        os.rmdir("clients/temp/ClassiCube")
+        os.rmdir("clients/temp/")
                 
     def download_dev():
-        is_64bit = sys.maxsize > 2**32
+        bits = '64' if sys.maxsize > 2**32 else '32'
         ext = '.exe' if PLAT_WIN else ''
+        base = "https://nightly.link/ClassiCube/ClassiCube/workflows"
         if PLAT_WIN:
-            r = requests.get(f"https://nightly.link/ClassiCube/ClassiCube/workflows/build_windows/master/ClassiCube-Win{'64' if is_64bit else '32'}-Direct3D9.exe.zip")
-            cc_os = 'w'
+            r = get(f"{base}/build_windows/master/ClassiCube-Win{bits}-Direct3D9.exe.zip")
+            cc_os = 'win'
         elif PLAT_MAC:
-            r = requests.get(f"https://nightly.link/ClassiCube/ClassiCube/workflows/build_mac{'64' if is_64bit else '32'}/master/ClassiCube-mac{'64' if is_64bit else '32'}-OpenGL.zip")
+            r = get(f"{base}/build_mac{bits}/master/ClassiCube-mac{bits}-OpenGL.zip")
             cc_os = 'mac'
         elif PLAT_NIX:
-            r = requests.get(f"https://nightly.link/ClassiCube/ClassiCube/workflows/build_linux/master/ClassiCube-Linux{'64' if is_64bit else '32'}-OpenGL.zip")
+            r = get(f"{base}/build_linux/master/ClassiCube-Linux{bits}-OpenGL.zip")
             cc_os = 'nix'
             
         z = ZipFile(io.BytesIO(r.content))
         z.extractall(path="clients/temp/")
         if os.path.isfile(f"clients/Latest Dev Version{ext}"):
             os.remove(f"clients/Latest Dev Version{ext}")
-        filename = f"cc-{cc_os}{'64' if is_64bit else '32'}-{'d3d9' if PLAT_WIN else 'gl1'}{ext}"
+        filename = f"cc-{cc_os}{bits}-{'d3d9' if PLAT_WIN else 'gl1'}{ext}"
         os.rename(f"clients/temp/{filename}", f"clients/Latest Dev Version{ext}")
         z.close()
         os.rmdir("clients/temp/")
