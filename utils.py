@@ -12,6 +12,7 @@ PLAT_NIX = platform == 'linux'
 PLAT_MAC = platform == 'darwin'
 
 def load_file(filename):
+    """If the given file exists, returns the contents. Otherwise returns an empty string."""
     if exists(filename):
         with open(filename, "r", encoding="utf-8") as file:
             return file.read()
@@ -22,6 +23,7 @@ def save_file(filename, data):
         file.write(data)
 
 def get_safe_unique_filename(directory, filename):
+    """Returns an NTFS safe filename."""
     filename = sub(r'[<>:"/\\|?*]', "_", filename).strip().replace(" ", "_")
     base, ext = splitext(filename)
     counter = 1
@@ -33,13 +35,19 @@ def get_safe_unique_filename(directory, filename):
 
     return new_filename
 
-def change_option(instance, option, value):
-    f = load_file(f"instances/{instance}/options.txt")
-    f = f.split("\n")
+def search_option(lines, instance, option) -> int or None:
+    """Internal function. Returns the line index of an option in `options.txt`, or `None` if that option does not exist."""
     where = None
-    for i in range(len(f)):
-        if f[i].startswith(f"{option}="):
-            where = i
+    for idx, val in enumerate(lines):
+        if val.startswith(f"{option}="):
+            where = idx
+    return where
+
+def change_option(instance, option, value):
+    """Changes an option in `options.txt`. Returns nothing."""
+    f = load_file(f"instances/{instance}/options.txt")
+    lines = f.split("\n")
+    where = search_option(lines, instance, option)
     
     if where is None:
         f.append(f"{option}={value}")
@@ -48,12 +56,10 @@ def change_option(instance, option, value):
     save_file(f"instances/{instance}/options.txt", "\n".join(f))
     
 def delete_option(instance, option):
+    """Deletes an option in `options.txt`. Returns nothing."""
     f = load_file(f"instances/{instance}/options.txt")
-    f = f.split("\n")
-    where = None
-    for i in range(len(f)):
-        if f[i].startswith(f"{option}="):
-            where = i
+    lines = f.split("\n")
+    where = search_option(lines, instance, option)
     
     if not where is None:
         del f[where]
@@ -107,7 +113,8 @@ def save_account(username, password):
 
 def login_to_cc(username, password):
     session = Session()
-    r = session.get("https://www.classicube.net/api/login/", timeout=60)
+    url = "https://www.classicube.net/api/login/"
+    r = session.get(url, timeout=60)
     myobj = {"username": username, "password": password, "token": r.json()["token"]}
-    x = session.post("https://www.classicube.net/api/login/", data=myobj)
-    return [x.json()["authenticated"],x.json()["username"]]
+    x = session.post(url, data=myobj).json()
+    return [ x["authenticated"], x["username"] ]
