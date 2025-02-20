@@ -36,7 +36,7 @@ def ensure_needed_files():
 
     def ensure_file(name, contents=""):
         if not os.path.isfile(name):
-            with open(name, "w") as f:
+            with open(name, "w", encoding="utf-8") as f:
                 f.write(contents)
 
     ensure_dir("clients")
