@@ -34,24 +34,24 @@ class Updater:
             r = get(url, timeout=60)
 
 
-            z = ZipFile(io.BytesIO(r.content))
-            z.extract("ClassiCube/ClassiCube.exe", path="clients/temp/")
-            if os.path.isfile("clients/Latest Stable Version.exe"):
-                os.remove("clients/Latest Stable Version.exe")
-            os.rename("clients/temp/ClassiCube/ClassiCube.exe", "clients/Latest Stable Version.exe")
-            z.close()
+            with ZipFile(io.BytesIO(r.content)) as  z:
+                z.extract("ClassiCube/ClassiCube.exe", path="clients/temp/")
+                if os.path.isfile("clients/Latest Stable Version.exe"):
+                    os.remove("clients/Latest Stable Version.exe")
+                os.rename("clients/temp/ClassiCube/ClassiCube.exe", "clients/Latest Stable Version.exe")
+                z.close()
 
         else:
             cc_os = 'osx' if PLAT_MAC else 'nix'
             url = f"{base}/{cc_os}{bits}/ClassiCube.tar.gz"
             r = get(url, timeout=60)
 
-            t = TarFile.open(fileobj=io.BytesIO(r.content))
-            t.extract("ClassiCube/ClassiCube", path="clients/temp/") # Gives a deprecation warning
-            if os.path.isfile("clients/Latest Stable Version"):
-                os.remove("clients/Latest Stable Version")
-            os.rename("clients/temp/ClassiCube/ClassiCube", "clients/Latest Stable Version")
-            t.close()
+            with TarFile.open(fileobj=io.BytesIO(r.content)) as t:
+                t.extract("ClassiCube/ClassiCube", path="clients/temp/") # Gives a deprecation warning
+                if os.path.isfile("clients/Latest Stable Version"):
+                    os.remove("clients/Latest Stable Version")
+                os.rename("clients/temp/ClassiCube/ClassiCube", "clients/Latest Stable Version")
+                t.close()
 
         os.rmdir("clients/temp/ClassiCube")
         os.rmdir("clients/temp/")
@@ -61,20 +61,20 @@ class Updater:
         ext = '.exe' if PLAT_WIN else ''
         base = "https://nightly.link/ClassiCube/ClassiCube/workflows"
         if PLAT_WIN:
-            r = get(f"{base}/build_windows/master/ClassiCube-Win{bits}-Direct3D9.exe.zip")
+            r = get(f"{base}/build_windows/master/ClassiCube-Win{bits}-Direct3D9.exe.zip", timeout=60)
             cc_os = 'win'
         elif PLAT_MAC:
-            r = get(f"{base}/build_mac{bits}/master/ClassiCube-mac{bits}-OpenGL.zip")
+            r = get(f"{base}/build_mac{bits}/master/ClassiCube-mac{bits}-OpenGL.zip", timeout=60)
             cc_os = 'mac'
         elif PLAT_NIX:
-            r = get(f"{base}/build_linux/master/ClassiCube-Linux{bits}-OpenGL.zip")
+            r = get(f"{base}/build_linux/master/ClassiCube-Linux{bits}-OpenGL.zip", timeout=60)
             cc_os = 'nix'
 
-        z = ZipFile(io.BytesIO(r.content))
-        z.extractall(path="clients/temp/")
-        if os.path.isfile(f"clients/Latest Dev Version{ext}"):
-            os.remove(f"clients/Latest Dev Version{ext}")
-        filename = f"cc-{cc_os}{bits}-{'d3d9' if PLAT_WIN else 'gl1'}{ext}"
-        os.rename(f"clients/temp/{filename}", f"clients/Latest Dev Version{ext}")
-        z.close()
+        with ZipFile(io.BytesIO(r.content)) as z
+            z.extractall(path="clients/temp/")
+            if os.path.isfile(f"clients/Latest Dev Version{ext}"):
+                os.remove(f"clients/Latest Dev Version{ext}")
+            filename = f"cc-{cc_os}{bits}-{'d3d9' if PLAT_WIN else 'gl1'}{ext}"
+            os.rename(f"clients/temp/{filename}", f"clients/Latest Dev Version{ext}")
+            z.close()
         os.rmdir("clients/temp/")

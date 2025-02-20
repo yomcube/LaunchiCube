@@ -63,7 +63,7 @@ def delete_option(instance, option):
 
     if not where is None:
         del f[where]
-    
+
     save_file(f"instances/{instance}/options.txt", "\n".join(f))
 
 
@@ -105,7 +105,7 @@ def makeInstance(name, version):
     instances_json.append({"name": name, "ver": version, "dir": safe_unique_filename})
     save_file("instances/index.json", json.dumps(instances_json))
     os.mkdir(f"instances/{safe_unique_filename}")
-    
+
 def save_account(username, password):
     accounts_json = json.loads(load_file("accounts.json"))
     accounts_json["accounts"].append({"name": username, "password": encrypt_data(password.encode("utf-8"))})
