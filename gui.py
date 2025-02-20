@@ -137,10 +137,13 @@ class Gui:
                 for o in opts:
                     utils.delete_option(instance['dir'], f"launcher-{o}")
 
-            ext = '.exe' if PLAT_WIN else ''
-            pre = '' if PLAT_WIN else '../../'
+            ext = '.exe' if utils.PLAT_WIN else ''
+            pre = '' if utils.PLAT_WIN else '../../'
             execute_dir = f"'{pre}clients/{instance['ver']}{ext}'"
-            subprocess.run([execute_dir], cwd=f'instances/{instance['dir']}/', shell=not PLAT_WIN, check=False)
+            subprocess.run(
+                [execute_dir], cwd=f'instances/{instance['dir']}/',
+                shell=(not utils.PLAT_WIN), check=False
+            )
 
     def update_right_bar(self, instance):
         for widget in self.right_frame.winfo_children():
