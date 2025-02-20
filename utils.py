@@ -139,4 +139,4 @@ def login_to_cc(username, password):
     r = session.get(url, timeout=60)
     myobj = {"username": username, "password": password, "token": r.json()["token"]}
     x = session.post(url, data=myobj).json()
-    return [ x["authenticated"], x["username"] ]
+    return ( x["authenticated"], x["username"] )

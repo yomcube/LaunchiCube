@@ -11,7 +11,7 @@ import shutil
 from PIL import Image, ImageTk
 from requests import get
 
-from utils import *
+import utils
 
 LOGO_SIZE = (150, 150)
 MAX_TEXT_WIDTH = 140
@@ -32,6 +32,7 @@ class Gui:
         try:
             self.launcher_icon = ImageTk.PhotoImage(Image.open("logo.png").resize(LOGO_SIZE, Image.Resampling.LANCZOS))
             self.root.iconphoto(True, self.launcher_icon)
+        # pylint: disable-next=bare-except
         except:
             print("logo.png not found!")
             self.launcher_icon = None
@@ -68,7 +69,7 @@ class Gui:
 
         self.dropdown_window = None
 
-        accounts_json = json.loads(load_file("accounts.json"))
+        accounts_json = json.loads(utils.load_file("accounts.json"))
         if not accounts_json["Selected Account"] is None:
             self.select_option(accounts_json["Selected Account"])
 
@@ -121,22 +122,20 @@ class Gui:
     def start_game(self, instance):
         if instance:
             print(f"Starting game for: {instance['name']}")
-            accounts_json = json.loads(load_file("accounts.json"))
+            accounts_json = json.loads(utils.load_file("accounts.json"))
             if not accounts_json["Selected Account"] is None:
                 selected_account_pass = None
                 for acc in accounts_json["accounts"]:
                     if acc["name"] == accounts_json["Selected Account"]:
                         selected_account_pass = acc["password"]
 
-                change_option(instance['dir'], "launcher-cc-username", accounts_json["Selected Account"])
-                change_option(instance['dir'], "launcher-dc-username", accounts_json["Selected Account"])
-                change_option(instance['dir'], "launcher-cc-password", selected_account_pass)
-                delete_option(instance['dir'], "launcher-session")
-                delete_option(instance['dir'], "launcher-server")
-                delete_option(instance['dir'], "launcher-ip")
-                delete_option(instance['dir'], "launcher-port")
-                delete_option(instance['dir'], "launcher-mppass")
-                delete_option(instance['dir'], "launcher-dc-mppass")
+                utils.change_option(instance['dir'], "launcher-cc-username", accounts_json["Selected Account"])
+                utils.change_option(instance['dir'], "launcher-dc-username", accounts_json["Selected Account"])
+                utils.change_option(instance['dir'], "launcher-cc-password", selected_account_pass)
+
+                opts = ['session', 'server', 'ip', 'port', 'mppass', 'dc-mppass']
+                for o in opts:
+                    utils.delete_option(instance['dir'], f"launcher-{o}")
 
             ext = '.exe' if PLAT_WIN else ''
             pre = '' if PLAT_WIN else '../../'
@@ -176,7 +175,7 @@ class Gui:
         for widget in self.main_frame.winfo_children():
             widget.destroy()
 
-        instances = json.loads(load_file("instances/index.json"))
+        instances = json.loads(utils.load_file("instances/index.json"))
 
         num_columns = max(1, math.floor(self.main_frame.winfo_width() / 195))
         row, col = 0, 0
@@ -216,7 +215,7 @@ class Gui:
                 row += 1
 
     def load_accounts(self):
-        accounts_json = json.loads(load_file("accounts.json"))
+        accounts_json = json.loads(utils.load_file("accounts.json"))
 
         self.options = []
         for acc in accounts_json["accounts"]:
@@ -241,9 +240,9 @@ class Gui:
                 self.images[opt] = ImageTk.PhotoImage(img.resize((30, 30), Image.Resampling.NEAREST))
 
     def delete_instance(self, instance):
-        instances = json.loads(load_file("instances/index.json"))
+        instances = json.loads(utils.load_file("instances/index.json"))
         instances.remove(instance)
-        save_file("instances/index.json", json.dumps(instances))
+        utils.save_file("instances/index.json", json.dumps(instances))
         shutil.rmtree(f"instances/{instance['dir']}/")
         self.load_instances()
         self.update_right_bar(instances[0])
@@ -260,11 +259,11 @@ class Gui:
 
         version_type = tk.StringVar(value="stable")
         versions_dropdown = ttk.Combobox(add_window, state="readonly")
-        versions_dropdown["values"] = getVersions("stable")
+        versions_dropdown["values"] = utils.getVersions("stable")
         versions_dropdown.current(0)
 
         def update_versions():
-            versions_dropdown["values"] = getVersions(version_type.get())
+            versions_dropdown["values"] = utils.getVersions(version_type.get())
             versions_dropdown.current(0)
 
         stable_radio = tk.Radiobutton(add_window, text="Stable", variable=version_type, value="stable",
@@ -279,8 +278,8 @@ class Gui:
         def create_instance():
             name = name_entry.get().strip()
             version = versions_dropdown.get()
-            if name and not instanceNameExists(name):
-                makeInstance(name, version)
+            if name and not utils.instanceNameExists(name):
+                utils.makeInstance(name, version)
                 add_window.destroy()
                 self.load_instances()
 
@@ -292,9 +291,9 @@ class Gui:
                 self.acc_switch_button.config(text=option, image=self.images[option], compound="left")
             else:
                 self.acc_switch_button.config(text=option, image='', compound="left")
-            accounts_json = json.loads(load_file("accounts.json"))
+            accounts_json = json.loads(utils.load_file("accounts.json"))
             accounts_json["Selected Account"] = option
-            save_file("accounts.json", json.dumps(accounts_json))
+            utils.save_file("accounts.json", json.dumps(accounts_json))
         else:
             self.open_account_manager()
         self.close_menu()
@@ -352,7 +351,7 @@ class Gui:
             selected_index = listbox.curselection()
             if selected_index:
                 selected_value = listbox.get(selected_index[0])
-                f = json.loads(load_file("accounts.json"))
+                f = json.loads(utils.load_file("accounts.json"))
 
                 for i in f["accounts"]:
                     if i["name"] == selected_value:
@@ -360,7 +359,7 @@ class Gui:
 
                 f["accounts"].remove(acc)
 
-                save_file("accounts.json", json.dumps(f))
+                utils.save_file("accounts.json", json.dumps(f))
                 self.load_accounts()
                 self.select_option(f["accounts"][0]["name"])
                 add_window.destroy()
@@ -390,11 +389,11 @@ class Gui:
         def create_account():
             name = name_entry.get().strip()
             password = password_entry.get().strip()
-            login = login_to_cc(name, password)
-            if name and password and not username_exists(login[1]) and login[0]:
-                save_account(login[1], password)
+            auth, username = utils.login_to_cc(name, password)
+            if name and password and not utils.username_exists(username) and auth:
+                utils.save_account(username, password)
                 self.load_accounts()
-                self.select_option(login[1])
+                self.select_option(username)
                 add_window.destroy()
             elif not name and not password:
                 status.config(text = "No Username or Password")
@@ -402,7 +401,7 @@ class Gui:
                 status.config(text = "No Username")
             elif not password:
                 status.config(text = "No Password")
-            elif username_exists(login[1]):
+            elif utils.username_exists(username):
                 status.config(text = "Account already exists")
             else:
                 status.config(text = "Failed to login")
