@@ -7,7 +7,7 @@ class installer_backend:
         installer_backend.save_link_as_file(f"{linkbase}updater.py", "updater.py")
         installer_backend.save_link_as_file(f"{linkbase}gui.py", "gui.py")
         installer_backend.save_link_as_file(f"{linkbase}utils.py", "utils.py")
-        
+
     def save_link_as_file(link, filepath, by=False):
         r = get(link, timeout=60)
         with open(filepath, f"w{'b' if by else ''}") as f:

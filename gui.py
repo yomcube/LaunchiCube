@@ -62,9 +62,9 @@ class Gui:
         self.acc_switch_button = tk.Button(self.top_frame, text="Select an Option", command=self.show_menu,
                                            bg="#7289DA", fg="white", font=("Arial", 12, "bold"))
         self.acc_switch_button.pack(pady=10, padx=10, side="right")
-        
+
         self.dropdown_window = None
-        
+
         accounts_json = json.loads(load_file("accounts.json"))
         if not accounts_json["Selected Account"] is None:
             self.select_option(accounts_json["Selected Account"])
@@ -73,14 +73,14 @@ class Gui:
         temp_text = text
         test_label = tk.Label(self.root, text=temp_text, font=font)
         test_label.update_idletasks()
-        
+
         while test_label.winfo_reqwidth() > max_width and len(temp_text) > 1:
             temp_text = temp_text[:-1]
             test_label.config(text=temp_text + "...")
             test_label.update_idletasks()
 
         return temp_text + "..." if temp_text != text else text
-    
+
     # pylint: disable-next=unused-argument
     def on_resize(self, event=None):
         global last_instances_columns
@@ -90,7 +90,7 @@ class Gui:
                 self.root.after_cancel(self.resize_after_id)
             self.resize_after_id = self.root.after(10, self.load_instances)
         last_instances_columns = instances_columns
-        
+
     def update(self):
         def save_link_as_file(link, filepath, by=False):
             r = get(link, timeout=60)
@@ -132,7 +132,7 @@ class Gui:
                 for acc in accounts_json["accounts"]:
                     if acc["name"] == accounts_json["Selected Account"]:
                         selected_account_pass = acc["password"]
-                        
+
                 change_option(instance['dir'], "launcher-cc-username", accounts_json["Selected Account"])
                 change_option(instance['dir'], "launcher-dc-username", accounts_json["Selected Account"])
                 change_option(instance['dir'], "launcher-cc-password", selected_account_pass)
@@ -142,7 +142,7 @@ class Gui:
                 delete_option(instance['dir'], "launcher-port")
                 delete_option(instance['dir'], "launcher-mppass")
                 delete_option(instance['dir'], "launcher-dc-mppass")
-            
+
             ext = '.exe' if PLAT_WIN else ''
             quote = "" if PLAT_WIN else "'"
             pre = '' if PLAT_WIN else '../../'
@@ -220,14 +220,14 @@ class Gui:
             if col >= num_columns:
                 col = 0
                 row += 1
-                
+
     def load_accounts(self):
         accounts_json = json.loads(load_file("accounts.json"))
-        
+
         self.options = []
         for acc in accounts_json["accounts"]:
             self.options.append(acc["name"])
-        
+
         self.options.append("Manage Accounts")
 
         self.images = {}
@@ -243,9 +243,9 @@ class Gui:
                 mult = width/64
                 img2 = img.crop((40*mult, 8*mult, 48*mult, 16*mult)).convert().convert('RGBA')
                 img = img.crop((8*mult, 8*mult, 16*mult, 16*mult)).convert("RGB")
-                img.paste(img2, (0,0), img2) 
+                img.paste(img2, (0,0), img2)
                 self.images[opt] = ImageTk.PhotoImage(img.resize((30, 30), Image.Resampling.NEAREST))
-    
+
     def delete_instance(self, instance):
         instances = json.loads(load_file("instances/index.json"))
         instances.remove(instance)
@@ -336,7 +336,7 @@ class Gui:
             self.dropdown_window.destroy()
             self.dropdown_window = None
             self.root.unbind("<Configure>")
-    
+
     def open_account_manager(self):
         add_window = tk.Toplevel(self.root)
         add_window.title("Account Manager")
@@ -349,33 +349,33 @@ class Gui:
         listbox.pack(fill="both", expand=True, pady=5, padx=5)
         for i in range(0, len(self.options) - 1):
             listbox.insert(i + 1, self.options[i])
-        
+
         def add_account():
             add_window.destroy()
             self.open_add_account()
-            
+
         def del_account():
             selected_index = listbox.curselection()
             if selected_index:
                 selected_value = listbox.get(selected_index[0])
                 f = json.loads(load_file("accounts.json"))
-                
+
                 for i in f["accounts"]:
                     if i["name"] == selected_value:
                         acc = i
-                        
+
                 f["accounts"].remove(acc)
-                
+
                 save_file("accounts.json", json.dumps(f))
                 self.load_accounts()
                 self.select_option(f["accounts"][0]["name"])
                 add_window.destroy()
-        
+
         tk.Button(left_frame, text="Add Account", command=add_account, bg="#7289DA", fg="white") \
             .pack(pady=10, fill="x", padx=10)
         tk.Button(left_frame, text="Delete Account", command=del_account, bg="#7289DA", fg="white") \
             .pack(pady=10, fill="x", padx=10)
-    
+
     def open_add_account(self):
         add_window = tk.Toplevel(self.root)
         add_window.title("Add Account")
@@ -385,11 +385,11 @@ class Gui:
         tk.Label(add_window, text="Username:", bg="#2C2F33", fg="white").pack(pady=5)
         name_entry = tk.Entry(add_window)
         name_entry.pack(pady=5)
-        
+
         tk.Label(add_window, text="Password:", bg="#2C2F33", fg="white").pack(pady=5)
         password_entry = tk.Entry(add_window, show="*")
         password_entry.pack(pady=5)
-        
+
         status = tk.Label(add_window, text="", bg="#2C2F33", fg="red")
         status.pack(pady=5)
 
@@ -412,5 +412,5 @@ class Gui:
                 status.config(text = "Account already exists")
             else:
                 status.config(text = "Failed to login")
-                
+
         tk.Button(add_window, text="Login", command=create_account, bg="#7289DA", fg="white").pack(pady=10)

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 from sys import exit as sysexit
 import tkinter as tk
@@ -27,7 +29,7 @@ def ensure_needed_files():
     def ensure_dir(name):
         if not os.path.isdir(name):
             os.mkdir(name)
-            
+
     def ensure_file(name, contents=""):
         if not os.path.isfile(name):
             with open(name, "w") as f:

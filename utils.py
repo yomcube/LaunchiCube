@@ -48,19 +48,19 @@ def change_option(instance, option, value):
     f = load_file(f"instances/{instance}/options.txt")
     lines = f.split("\n")
     where = search_option(lines, instance, option)
-    
+
     if where is None:
         f.append(f"{option}={value}")
     else:
         f[where] = f"{option}={value}"
     save_file(f"instances/{instance}/options.txt", "\n".join(f))
-    
+
 def delete_option(instance, option):
     """Deletes an option in `options.txt`. Returns nothing."""
     f = load_file(f"instances/{instance}/options.txt")
     lines = f.split("\n")
     where = search_option(lines, instance, option)
-    
+
     if not where is None:
         del f[where]
     
@@ -79,7 +79,7 @@ if PLAT_WIN:
         def encrypt_data(data: bytes) -> bytes:
             blob_in = DATA_BLOB(len(data), ctypes.cast(ctypes.create_string_buffer(data), ctypes.POINTER(ctypes.c_ubyte)))
             blob_out = DATA_BLOB()
-            
+
             if crypt32.CryptProtectData(
                 ctypes.byref(blob_in), None, None, None, None, 0, ctypes.byref(blob_out)
             ):
