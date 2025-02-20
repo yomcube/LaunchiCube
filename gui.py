@@ -18,6 +18,9 @@ MAX_TEXT_WIDTH = 140
 LAST_INSTANCES_COLUMNS = 1
 
 class Gui:
+    """
+    Main LaunchiCube GUI class
+    """
     def __init__(self, root):
         self.root = root
         self.root.title("LaunchiCube")
@@ -144,7 +147,6 @@ class Gui:
                 delete_option(instance['dir'], "launcher-dc-mppass")
 
             ext = '.exe' if PLAT_WIN else ''
-            quote = "" if PLAT_WIN else "'"
             pre = '' if PLAT_WIN else '../../'
             execute_dir = f"'{pre}clients/{instance['ver']}{ext}'"
             subprocess.run([execute_dir], cwd=f'instances/{instance['dir']}/', shell=not PLAT_WIN, check=False)

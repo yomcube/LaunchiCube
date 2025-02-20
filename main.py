@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+"""
+Main LaunchiCube execution module.
+Inits files/dirs and opens the GUI.
+"""
+
 import os
 from sys import exit as sysexit
 from tkinter import Tk
@@ -17,8 +22,7 @@ if not PLAT_WIN and not PLAT_NIX and not PLAT_MAC:
 print("Starting...")
 
 if PLAT_WIN:
-    ctypes = __import__('ctypes')
-    ctypes.windll.shcore.SetProcessDpiAwareness(1)
+    __import__('ctypes').windll.shcore.SetProcessDpiAwareness(1)
 
 def ensure_needed_files():
     """
@@ -44,6 +48,7 @@ def ensure_needed_files():
     ensure_file("accounts.json", '{"accounts": [], "Selected Account": null}')
     ensure_file("instances/index.json", '[]')
     ensure_file("clients/index.json", '{"release_ver": "0.0", "dev_ver": 0}')
+
 
 if __name__ == "__main__":
     ensure_needed_files()
