@@ -66,7 +66,7 @@ class Updater:
         bits = '64' if sys.maxsize > 2**32 else '32'
         ext = '.exe' if PLAT_WIN else ''
         base = "https://nightly.link/ClassiCube/ClassiCube/workflows"
-        cc_os = None
+        r, cc_os = None, None
         if PLAT_WIN:
             r = get(f"{base}/build_windows/master/ClassiCube-Win{bits}-Direct3D9.exe.zip", timeout=60)
             cc_os = 'win'
