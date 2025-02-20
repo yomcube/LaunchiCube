@@ -111,14 +111,6 @@ class Gui:
     def select_instance(self, instance):
         logo_path = f"instances/{instance['dir']}/logo.png"
 
-        if os.path.exists(logo_path):
-            instance_icon = ImageTk.PhotoImage(Image.open(logo_path).resize(LOGO_SIZE, Image.Resampling.LANCZOS))
-        else:
-            instance_icon = self.launcher_icon
-
-        self.instance_logo_label.config(image=instance_icon)
-        self.instance_logo_label.image = instance_icon
-
         self.instance_name_label.config(text=instance["name"])
 
         self.play_button["state"] = "normal"
