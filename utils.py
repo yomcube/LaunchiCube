@@ -1,3 +1,5 @@
+"""Some useful general purpose utility functions"""
+
 from base64 import b64encode
 import json
 import os
@@ -12,18 +14,28 @@ PLAT_NIX = platform == 'linux'
 PLAT_MAC = platform == 'darwin'
 
 def load_file(filename):
-    """If the given file exists, returns the contents. Otherwise returns an empty string."""
+    """
+    Loads the contents of a file (`filename`).
+    Returns the file contents if the file exists, otherwise an empty string.
+    """
     if exists(filename):
         with open(filename, "r", encoding="utf-8") as file:
             return file.read()
     return ""
 
 def save_file(filename, data):
+    """
+    Writes `data` to the file `filename`.
+    Returns nothing.
+    """
     with open(filename, "w", encoding="utf-8") as file:
         file.write(data)
 
 def get_safe_unique_filename(directory, filename):
-    """Returns an NTFS safe filename."""
+    """
+    Converts a string that may be unsafe for NTFS filenames into a safe string. 
+    Returns the NTFS safe filename.
+    """
     filename = sub(r'[<>:"/\\|?*]', "_", filename).strip().replace(" ", "_")
     base, ext = splitext(filename)
     counter = 1
@@ -36,7 +48,11 @@ def get_safe_unique_filename(directory, filename):
     return new_filename
 
 def search_option(lines, instance, option) -> int or None:
-    """Internal function. Returns the line index of an option in `options.txt`, or `None` if that option does not exist."""
+    """
+    Searches `options.txt` for a given option.
+    Returns:
+        The line index of an option in `options.txt`, or `None` if that option does not exist.
+    """
     where = None
     for idx, val in enumerate(lines):
         if val.startswith(f"{option}="):
@@ -44,7 +60,10 @@ def search_option(lines, instance, option) -> int or None:
     return where
 
 def change_option(instance, option, value):
-    """Changes an option in `options.txt`. Returns nothing."""
+    """
+    Changes an option in `options.txt`.
+    Returns nothing.
+    """
     f = load_file(f"instances/{instance}/options.txt")
     lines = f.split("\n")
     where = search_option(lines, instance, option)
@@ -56,7 +75,10 @@ def change_option(instance, option, value):
     save_file(f"instances/{instance}/options.txt", "\n".join(f))
 
 def delete_option(instance, option):
-    """Deletes an option in `options.txt`. Returns nothing."""
+    """
+    Deletes an option in `options.txt`.
+    Returns nothing.
+    """
     f = load_file(f"instances/{instance}/options.txt")
     lines = f.split("\n")
     where = search_option(lines, instance, option)

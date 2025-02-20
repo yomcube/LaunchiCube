@@ -15,7 +15,7 @@ from utils import *
 
 LOGO_SIZE = (150, 150)
 MAX_TEXT_WIDTH = 140
-last_instances_columns = 1
+LAST_INSTANCES_COLUMNS = 1
 
 class Gui:
     def __init__(self, root):
@@ -83,13 +83,13 @@ class Gui:
 
     # pylint: disable-next=unused-argument
     def on_resize(self, event=None):
-        global last_instances_columns
+        global LAST_INSTANCES_COLUMNS
         instances_columns = math.floor(self.main_frame.winfo_width()/195)
-        if not instances_columns == last_instances_columns:
+        if not instances_columns == LAST_INSTANCES_COLUMNS:
             if hasattr(self, "resize_after_id"):
                 self.root.after_cancel(self.resize_after_id)
             self.resize_after_id = self.root.after(10, self.load_instances)
-        last_instances_columns = instances_columns
+        LAST_INSTANCES_COLUMNS = instances_columns
 
     def update(self):
         def save_link_as_file(link, filepath, by=False):

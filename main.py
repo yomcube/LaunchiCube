@@ -2,7 +2,7 @@
 
 import os
 from sys import exit as sysexit
-import tkinter as tk
+from tkinter import Tk
 
 from requests import get
 
@@ -21,6 +21,10 @@ if PLAT_WIN:
     ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
 def ensure_needed_files():
+    """
+    Ensures the necessary files and directories exist and are initialized.
+    Returns nothing.
+    """
     if not os.path.isfile("logo.png"):
         r = get("https://raw.githubusercontent.com/Tycho10101/LaunchiCube/refs/heads/main/logo.png", timeout=60)
         with open("logo.png", "wb") as f:
@@ -45,6 +49,6 @@ if __name__ == "__main__":
     ensure_needed_files()
     Updater.update_clients()
 
-    root = tk.Tk()
+    root = Tk()
     app = Gui(root)
     root.mainloop()

@@ -1,3 +1,5 @@
+"""Responsible for updating ClassiCube"""
+
 import io
 import json
 import os
@@ -10,7 +12,9 @@ from requests import get
 from utils import *
 
 class Updater:
+    """The class containing updater logic"""
     def update_clients():
+        """Update CC clients, both stable and dev."""
         r = get("https://cdn.classicube.net/client/builds.json", timeout=60)
         f = json.loads(load_file("clients/index.json"))
 
@@ -27,6 +31,7 @@ class Updater:
             Updater.download_dev()
 
     def download_release():
+        """Download the latest stable release of CC"""
         bits = '64' if sys.maxsize > 2**32 else '32'
         base = "https://cdn.classicube.net/client/release"
         if PLAT_WIN:
@@ -57,6 +62,7 @@ class Updater:
         os.rmdir("clients/temp/")
 
     def download_dev():
+        """Download the latest nightly build of CC"""
         bits = '64' if sys.maxsize > 2**32 else '32'
         ext = '.exe' if PLAT_WIN else ''
         base = "https://nightly.link/ClassiCube/ClassiCube/workflows"
@@ -70,7 +76,7 @@ class Updater:
             r = get(f"{base}/build_linux/master/ClassiCube-Linux{bits}-OpenGL.zip", timeout=60)
             cc_os = 'nix'
 
-        with ZipFile(io.BytesIO(r.content)) as z
+        with ZipFile(io.BytesIO(r.content)) as z:
             z.extractall(path="clients/temp/")
             if os.path.isfile(f"clients/Latest Dev Version{ext}"):
                 os.remove(f"clients/Latest Dev Version{ext}")
