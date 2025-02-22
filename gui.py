@@ -140,6 +140,7 @@ class gui:
                 delete_option(instance['dir'], "launcher-port")
                 delete_option(instance['dir'], "launcher-mppass")
                 delete_option(instance['dir'], "launcher-dc-mppass")
+                delete_option(instance['dir'], "launcher-username")
             
             ext = '.exe' if PLAT_WIN else ''
             quote = "" if PLAT_WIN else "'"
