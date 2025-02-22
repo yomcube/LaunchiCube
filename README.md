@@ -3,11 +3,9 @@
 
 A simple multi-instance launcher for ClassiCube, inspired by MultiMC, and made in Python
 
-## Requirements
-
-- Recomended Python Version: 3.12
-- requests
-- Pillow
+## Instalation
+Make sure a python version around 3.12
+Download the installer.py at misc/installer.py and run that in an empty folder for LaunchiCube
 
 ## Features
 
