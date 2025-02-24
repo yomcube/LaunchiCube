@@ -3,7 +3,7 @@ import subprocess
 from sys import exit as sysexit
 import threading
 
-from utils import get, save_link_as_file
+from utils import save_link_as_file
 
 HAS_TKINTER = False
 while not HAS_TKINTER:
