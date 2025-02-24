@@ -16,7 +16,7 @@ def get(url, **kwargs):
     return rget(url, timeout=60, **kwargs)
 
 def save_link_as_file(link, filepath):
-    r = utils.get(link)
+    r = get(link)
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(r.text)
 
