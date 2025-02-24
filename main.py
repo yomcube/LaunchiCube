@@ -1,14 +1,13 @@
 import os
-from requests import get
 import tkinter as tk
 
-from gui import gui
-from updater import Updater
-from utils import *
+from gui import Gui
+import updater
+from utils import PLAT_WIN, PLAT_NIX, PLAT_MAC, get
 
-if not PLAT_WIN and not PLAT_MAC and not PLAT_NIX:
+if not PLAT_WIN and not PLAT_NIX and not PLAT_MAC:
     print("OS is not supported!")
-    quit()
+    __import__('sys').exit()
 
 print("Starting...")
 
@@ -28,7 +27,7 @@ def ensure_needed_files():
             
     def ensure_file(name, contents=""):
         if not os.path.isfile(name):
-            with open(name, "w") as f:
+            with open(name, "w", encoding="utf-8") as f:
                 f.write(contents)
 
     ensure_dir("clients")
@@ -39,8 +38,8 @@ def ensure_needed_files():
 
 if __name__ == "__main__":
     ensure_needed_files()
-    Updater.update_clients()
+    updater.update_clients()
 
     root = tk.Tk()
-    app = gui(root)
+    app = Gui(root)
     root.mainloop()

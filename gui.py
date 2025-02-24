@@ -2,22 +2,20 @@ import io
 import json
 import math
 import os
-from PIL import Image, ImageTk
-import requests
 import subprocess
 import sys
 import tkinter as tk
 from tkinter import ttk
 import shutil
-from requests import get
 
-from utils import *
+from PIL import Image, ImageTk
+
+import utils
 
 LOGO_SIZE = (150, 150)
 MAX_TEXT_WIDTH = 140
-last_instances_columns = 1
 
-class gui:
+class Gui:
     def __init__(self, root):
         self.root = root
         self.root.title("LaunchiCube")
@@ -25,10 +23,13 @@ class gui:
         self.root.configure(bg="#2C2F33")
 
         self.load_accounts()
+        
+        self.resize_after_id = None
 
         try:
             self.launcher_icon = ImageTk.PhotoImage(Image.open("logo.png").resize(LOGO_SIZE, Image.Resampling.LANCZOS))
             self.root.iconphoto(True, self.launcher_icon)
+        # pylint: disable-next=bare-except
         except:
             print("logo.png not found!")
             self.launcher_icon = None
@@ -47,10 +48,14 @@ class gui:
 
         self.right_logo_label = tk.Label(self.right_frame, bg="#3C3F41")
         self.right_name_label = tk.Label(self.right_frame, bg="#3C3F41", fg="white", font=("Arial", 14, "bold"))
-        self.play_button = tk.Button(self.right_frame, text="Play", bg="#4CAF50", fg="white", font=("Arial", 12, "bold"),
-                                     command=lambda: self.start_game(self.selected_instance), state="disabled")
-        self.delete_button = tk.Button(self.right_frame, text="Delete", bg="#AF4C50", fg="white", font=("Arial", 12, "bold"),
-                                     command=lambda: self.delete_instance(self.selected_instance), state="disabled")                                     
+        self.play_button = tk.Button(
+            self.right_frame, text="Play", bg="#4CAF50", fg="white", font=("Arial", 12, "bold"),
+            command=lambda: self.start_game(self.selected_instance), state="disabled"
+        )
+        self.delete_button = tk.Button(
+            self.right_frame, text="Delete", bg="#AF4C50", fg="white", font=("Arial", 12, "bold"),
+            command=lambda: self.delete_instance(self.selected_instance), state="disabled"
+        )                                     
 
         self.main_frame = tk.Frame(root, bg="#23272A")
         self.main_frame.pack(expand=True, fill="both")
@@ -59,13 +64,16 @@ class gui:
         self.selected_instance = None
         self.load_instances()
 
-        self.acc_switch_button = tk.Button(self.top_frame, text="Select an Option", command=self.show_menu, bg="#7289DA", fg="white", font=("Arial", 12, "bold"))
+        self.acc_switch_button = tk.Button(
+            self.top_frame, text="Select an Option", command=self.show_menu,
+            bg="#7289DA", fg="white", font=("Arial", 12, "bold")
+        )
         self.acc_switch_button.pack(pady=10, padx=10, side="right")
         
         self.dropdown_window = None
         
-        accounts_json = json.loads(load_file("accounts.json"))
-        if not accounts_json["Selected Account"] == None:
+        accounts_json = json.loads(utils.load_file("accounts.json"))
+        if not accounts_json["Selected Account"] is None:
             self.select_option(accounts_json["Selected Account"])
 
     def truncate_text(self, text, font, max_width):
@@ -80,42 +88,30 @@ class gui:
 
         return temp_text + "..." if temp_text != text else text
 
-    def on_resize(self, event=None):
-        global last_instances_columns
+    def on_resize(self):
+        last_instances_columns = 1
         instances_columns = math.floor(self.main_frame.winfo_width()/195)
         if not instances_columns == last_instances_columns:
-            if hasattr(self, "resize_after_id"):
+            if self.resize_after_id is not None:
                 self.root.after_cancel(self.resize_after_id)
             self.resize_after_id = self.root.after(10, self.load_instances)
         last_instances_columns = instances_columns
         
     def update(self):
-        def save_link_as_file(link, filepath, bytes=False):
-            r = get(link)
-            with open(filepath, f"w{'b' if bytes else ''}") as f:
-                f.write(r.content if bytes else r.text)
+        def save_link_as_file(link, filepath):
+            r = utils.get(link)
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(r.text)
 
         linkbase = "https://raw.githubusercontent.com/Tycho10101/LaunchiCube/refs/heads/main/"
         save_link_as_file(f"{linkbase}misc/installer_backend.py", "installer_backend.py")
-        from installer_backend import installer_backend
+        installer_backend = __import__('installer_backend')
         installer_backend.install()
         os.remove("installer_backend.py")
-        subprocess.Popen(["python", "main.py"])
-        quit()
+        subprocess.Popen([sys.executable, "main.py"]) # pylint: disable=consider-using-with
+        sys.exit()
 
     def select_instance(self, instance):
-        logo_path = f"instances/{instance['dir']}/logo.png"
-
-        if os.path.exists(logo_path):
-            instance_icon = ImageTk.PhotoImage(Image.open(logo_path).resize(LOGO_SIZE, Image.Resampling.LANCZOS))
-        else:
-            instance_icon = self.launcher_icon
-
-        self.instance_logo_label.config(image=instance_icon)
-        self.instance_logo_label.image = instance_icon
-
-        self.instance_name_label.config(text=instance["name"])
-
         self.play_button["state"] = "normal"
         self.play_button.config(command=lambda: self.start_game(instance))
         self.delete_button["state"] = "normal"
@@ -124,32 +120,34 @@ class gui:
     def start_game(self, instance):
         if instance:
             print(f"Starting game for: {instance['name']}")
-            accounts_json = json.loads(load_file("accounts.json"))
-            if not accounts_json["Selected Account"] == None:
+            accounts_json = json.loads(utils.load_file("accounts.json"))
+            instancedir = instance['dir']
+            
+            if not accounts_json["Selected Account"] is None:
                 selected_account_pass = None
                 for acc in accounts_json["accounts"]:
                     if acc["name"] == accounts_json["Selected Account"]:
                         selected_account_pass = acc["password"]
-                        
-                change_option(instance['dir'], "launcher-cc-username", accounts_json["Selected Account"])
-                change_option(instance['dir'], "launcher-dc-username", accounts_json["Selected Account"])
-                change_option(instance['dir'], "launcher-cc-password", selected_account_pass)
-                delete_option(instance['dir'], "launcher-session")
-                delete_option(instance['dir'], "launcher-server")
-                delete_option(instance['dir'], "launcher-ip")
-                delete_option(instance['dir'], "launcher-port")
-                delete_option(instance['dir'], "launcher-mppass")
-                delete_option(instance['dir'], "launcher-dc-mppass")
-                delete_option(instance['dir'], "launcher-username")
+                
+                utils.change_option(instancedir, "launcher-cc-username", accounts_json["Selected Account"])
+                utils.change_option(instancedir, "launcher-dc-username", accounts_json["Selected Account"])
+                utils.change_option(instancedir, "launcher-cc-password", selected_account_pass)
+                
+                opts = ['session', 'server', 'ip', 'port', 'mppass', 'dc-mppass', 'username']
+                for o in opts:
+                    utils.delete_option(instancedir, f"launcher-{o}")
             
-            ext = '.exe' if PLAT_WIN else ''
-            quote = "" if PLAT_WIN else "'"
-            pre = f'instances/{instance["dir"]}/' if PLAT_WIN else ''
+            ext = '.exe' if utils.PLAT_WIN else ''
+            quote = "" if utils.PLAT_WIN else "'"
+            pre = f'instances/{instancedir}/' if utils.PLAT_WIN else ''
             execute_dir = f"{instance['ver']}{ext}"
             
             shutil.copy(f"clients/{execute_dir}", f"instances/{instance['dir']}/ClassiCube{ext}")
-            subprocess.run([f"{quote}{pre}ClassiCube{quote}"], cwd=f'instances/{instance['dir']}/', shell=not PLAT_WIN)
-            os.remove(f"instances/{instance['dir']}/ClassiCube{ext}") 
+            subprocess.run(
+                [f"{quote}{pre}ClassiCube{quote}"], cwd=f'instances/{instancedir}/',
+                shell=not utils.PLAT_WIN, check=False
+            )
+            os.remove(f"instances/{instancedir}/ClassiCube{ext}") 
 
     def update_right_bar(self, instance):
         for widget in self.right_frame.winfo_children():
@@ -184,11 +182,15 @@ class gui:
         for widget in self.main_frame.winfo_children():
             widget.destroy()
 
-        instances = json.loads(load_file("instances/index.json"))
+        instances = json.loads(utils.load_file("instances/index.json"))
 
         num_columns = max(1, math.floor(self.main_frame.winfo_width() / 195))
         row, col = 0, 0
-
+        
+        def on_instance_click(inst):
+            self.selected_instance = inst
+            self.update_right_bar(inst)
+        
         for instance in instances:
             instance_dir = f"instances/{instance['dir']}"
             logo_path = f"{instance_dir}/logo.png"
@@ -210,13 +212,9 @@ class gui:
                                   bg="#2C2F33", anchor="w", wraplength=MAX_TEXT_WIDTH)
             name_label.pack(padx=5, fill="x", expand=True)
 
-            def on_instance_click(inst=instance):
-                self.selected_instance = inst
-                self.update_right_bar(inst)
-
-            frame.bind("<Button-1>", lambda e, inst=instance: on_instance_click(inst))
-            logo_label.bind("<Button-1>", lambda e, inst=instance: on_instance_click(inst))
-            name_label.bind("<Button-1>", lambda e, inst=instance: on_instance_click(inst))
+            frame.bind("<Button-1>", lambda e, i=instance: on_instance_click(i))
+            logo_label.bind("<Button-1>", lambda e, i=instance: on_instance_click(i))
+            name_label.bind("<Button-1>", lambda e, i=instance: on_instance_click(i))
 
             col += 1
             if col >= num_columns:
@@ -224,7 +222,7 @@ class gui:
                 row += 1
                 
     def load_accounts(self):
-        accounts_json = json.loads(load_file("accounts.json"))
+        accounts_json = json.loads(utils.load_file("accounts.json"))
         
         self.options = []
         for acc in accounts_json["accounts"]:
@@ -235,13 +233,13 @@ class gui:
         self.images = {}
         for opt in self.options:
             if opt != "Manage Accounts":
-                r = requests.get(f"https://cdn.classicube.net/skin/{opt}.png")
+                r = utils.get(f"https://cdn.classicube.net/skin/{opt}.png")
                 try:
                     img = Image.open(io.BytesIO(r.content))
                 except IOError:
-                    r = requests.get("https://Tycho10101.is-a.dev/Assets/char.png")
+                    r = utils.get("https://Tycho10101.is-a.dev/Assets/char.png")
                     img = Image.open(io.BytesIO(r.content))
-                width, height = img.size
+                width = img.size[0]
                 mult = width/64
                 img2 = img.crop((40*mult, 8*mult, 48*mult, 16*mult)).convert().convert('RGBA')
                 img = img.crop((8*mult, 8*mult, 16*mult, 16*mult)).convert("RGB")
@@ -249,9 +247,9 @@ class gui:
                 self.images[opt] = ImageTk.PhotoImage(img.resize((30, 30), Image.Resampling.NEAREST))
     
     def delete_instance(self, instance):
-        instances = json.loads(load_file("instances/index.json"))
+        instances = json.loads(utils.load_file("instances/index.json"))
         instances.remove(instance)
-        save_file("instances/index.json", json.dumps(instances))
+        utils.save_file("instances/index.json", json.dumps(instances))
         shutil.rmtree(f"instances/{instance['dir']}/")
         self.load_instances()
         self.update_right_bar(instances[0])
@@ -268,11 +266,11 @@ class gui:
 
         version_type = tk.StringVar(value="stable")
         versions_dropdown = ttk.Combobox(add_window, state="readonly")
-        versions_dropdown["values"] = getVersions("stable")
+        versions_dropdown["values"] = utils.get_versions("stable")
         versions_dropdown.current(0)
 
         def update_versions():
-            versions_dropdown["values"] = getVersions(version_type.get())
+            versions_dropdown["values"] = utils.get_versions(version_type.get())
             versions_dropdown.current(0)
 
         stable_radio = tk.Radiobutton(add_window, text="Stable", variable=version_type, value="stable",
@@ -287,8 +285,8 @@ class gui:
         def create_instance():
             name = name_entry.get().strip()
             version = versions_dropdown.get()
-            if name and not instanceNameExists(name):
-                makeInstance(name, version)
+            if name and not utils.instance_name_exists(name):
+                utils.make_instance(name, version)
                 add_window.destroy()
                 self.load_instances()
 
@@ -300,9 +298,9 @@ class gui:
                 self.acc_switch_button.config(text=option, image=self.images[option], compound="left")
             else:
                 self.acc_switch_button.config(text=option, image='', compound="left")
-            accounts_json = json.loads(load_file("accounts.json"))
+            accounts_json = json.loads(utils.load_file("accounts.json"))
             accounts_json["Selected Account"] = option
-            save_file("accounts.json", json.dumps(accounts_json))
+            utils.save_file("accounts.json", json.dumps(accounts_json))
         else:
             self.open_account_manager()
         self.close_menu()
@@ -327,9 +325,14 @@ class gui:
 
         self.root.bind("<Configure>", self.update_menu_position)
 
-    def update_menu_position(self, event=None):
+    def update_menu_position(self):
         if self.dropdown_window:
-            self.dropdown_window.geometry(f"150x{35*len(self.options)}+{self.acc_switch_button.winfo_rootx()}+{self.acc_switch_button.winfo_rooty() + self.acc_switch_button.winfo_height()}")
+            a = [
+                35*len(self.options),
+                self.acc_switch_button.winfo_rootx(),
+                self.acc_switch_button.winfo_rooty() + self.acc_switch_button.winfo_height()
+            ]
+            self.dropdown_window.geometry(f"150x{'+'.join(a)}")
 
     def close_menu(self):
         if self.dropdown_window:
@@ -347,7 +350,6 @@ class gui:
         left_frame.pack(fill="y", side="left")
         listbox = tk.Listbox(add_window, bg="#2C2F33", fg="#FFFFFF", bd=0, highlightthickness=0)
         listbox.pack(fill="both", expand=True, pady=5, padx=5)
-        listbox.yview
         for i in range(0, len(self.options) - 1):
             listbox.insert(i + 1, self.options[i])
         
@@ -359,21 +361,26 @@ class gui:
             selected_index = listbox.curselection()
             if selected_index:
                 selected_value = listbox.get(selected_index[0])
-                f = json.loads(load_file("accounts.json"))
+                f = json.loads(utils.load_file("accounts.json"))
                 
+                acc = None
                 for i in f["accounts"]:
                     if i["name"] == selected_value:
                         acc = i
+                if acc is None:
+                    raise RuntimeError("Could not find account to delete!")
                         
                 f["accounts"].remove(acc)
                 
-                save_file("accounts.json", json.dumps(f))
+                utils.save_file("accounts.json", json.dumps(f))
                 self.load_accounts()
                 self.select_option(f["accounts"][0]["name"])
                 add_window.destroy()
         
-        tk.Button(left_frame, text="Add Account", command=add_account, bg="#7289DA", fg="white").pack(pady=10, fill="x", padx=10)
-        tk.Button(left_frame, text="Delete Account", command=del_account, bg="#7289DA", fg="white").pack(pady=10, fill="x", padx=10)
+        tk.Button(left_frame, text="Add Account", command=add_account, bg="#7289DA", fg="white")\
+            .pack(pady=10, fill="x", padx=10)
+        tk.Button(left_frame, text="Delete Account", command=del_account, bg="#7289DA", fg="white")\
+            .pack(pady=10, fill="x", padx=10)
     
     def open_add_account(self):
         add_window = tk.Toplevel(self.root)
@@ -395,11 +402,11 @@ class gui:
         def create_account():
             name = name_entry.get().strip()
             password = password_entry.get().strip()
-            login = login_to_cc(name, password)
-            if name and password and not username_exists(login[1]) and login[0]:
-                save_account(login[1], password)
+            auth, username = utils.login_to_cc(name, password)
+            if name and password and not utils.username_exists(username) and auth:
+                utils.save_account(username, password)
                 self.load_accounts()
-                self.select_option(login[1])
+                self.select_option(username)
                 add_window.destroy()
             elif not name and not password:
                 status.config(text = "No Username or Password")
@@ -407,7 +414,7 @@ class gui:
                 status.config(text = "No Username")
             elif not password:
                 status.config(text = "No Password")
-            elif username_exists(login[1]):
+            elif utils.username_exists(username):
                 status.config(text = "Account already exists")
             else:
                 status.config(text = "Failed to login")

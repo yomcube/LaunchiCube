@@ -1,4 +1,4 @@
-from requests import get
+from utils import get
 
 class installer_backend:
     def install():
@@ -8,7 +8,7 @@ class installer_backend:
         installer_backend.save_link_as_file(f"{linkbase}gui.py", "gui.py")
         installer_backend.save_link_as_file(f"{linkbase}utils.py", "utils.py")
         
-    def save_link_as_file(link, filepath, bytes=False):
+    def save_link_as_file(link, filepath):
         r = get(link)
-        with open(filepath, f"w{'b' if bytes else ''}") as f:
-            f.write(r.content if bytes else r.text)
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(r.text)

@@ -1,18 +1,20 @@
 import os
 
-has_tkinter = False
-while not has_tkinter:
+HAS_TKINTER = False
+while not HAS_TKINTER:
     try:
         import tkinter as tk
         from tkinter import ttk
-        has_tkinter = True
+        HAS_TKINTER = True
     except:
         print("It appears that I can't use tkinter.")
         print("To install this, use the respective command below:")
-        print("For Windows you need to reinstall python\nFor Linux use: sudo apt install python3-tk\nFor MacOS use: brew install python3-tk")
+        print("""For Windows you need to reinstall python
+For Linux use: sudo apt install python3-tk
+For MacOS use: brew install python3-tk""")
         print("")
-        has_tkinter = False
-    if not has_tkinter:
+        HAS_TKINTER = False
+    if not HAS_TKINTER:
         input("Press enter to try again.")
 
 def test_libraries(libraries):
@@ -23,8 +25,10 @@ def test_libraries(libraries):
         except:
             missing_libraries.append(lib)
             
-    if missing_libraries == []:
-        missing_libraries.append({"name": "None!", "description": "There is no missing libraries! You can now install!"})
+    if not missing_libraries:
+        missing_libraries.append(
+            {"name": "None!", "description": "There is no missing libraries! You can now install!"}
+        )
     return missing_libraries
         
 
@@ -58,9 +62,33 @@ class Installer:
         scrollbar.pack(side="right", fill="y")
 
         self.required_libraries = [
-            {"name": "Pillow", "description": "This is required to load and modify images.\nTo install this, use the respective command below:\nFor Windows use: pip install pillow\nFor Linux use: sudo apt install python3-pillow\nFor MacOS use: brew install python3-pillow", "import":"from PIL import Image"},
-            {"name": "Pillow-tk", "description": "This is required for pillow to talk to tkinter.\nTo install this, use the respective command below:\nFor Windows use: pip install pillow.imagetk\nFor Linux use: sudo apt install python3-pillow.imagetk\nFor MacOS use: brew install python3-pillow.imagetk", "import":"from PIL import ImageTk"},
-            {"name": "Requests", "description": "This is required for our project to talk to the internet.\nTo install this, use the respective command below:\nFor Windows use: pip install requests\nFor Linux use: sudo apt install python3-requests\nFor MacOS use: brew install python3-requests", "import":"import requests"},
+            {
+                "name": "Pillow",
+                "description": """This is required to load and modify images.
+To install this, use the respective command below:
+For Windows use: pip install pillow
+For Linux use: sudo apt install python3-pillow
+For MacOS use: brew install python3-pillow""",
+                "import": "from PIL import Image"
+            },
+            {
+                "name": "Pillow-tk",
+                "description": """This is required for pillow to talk to tkinter.
+To install this, use the respective command below:
+For Windows use: pip install pillow.imagetk
+For Linux use: sudo apt install python3-pillow.imagetk
+For MacOS use: brew install python3-pillow.imagetk""",
+                "import": "from PIL import ImageTk"
+            },
+            {
+                "name": "Requests",
+                "description": """This is required for LaunchiCube to talk to the internet.
+To install this, use the respective command below:
+For Windows use: pip install requests
+For Linux use: sudo apt install python3-requests
+For MacOS use: brew install python3-requests""",
+                "import": "import requests"
+            },
         ]
         
         self.missing_libraries = test_libraries(self.required_libraries)
@@ -69,10 +97,16 @@ class Installer:
 
         self.populate_libraries()
 
-        self.action_button = tk.Button(root, text="Install LaunchiCube", command=self.install_launchicube, bg="#7289DA", fg="white", font=("Arial", 12, "bold"))
+        self.action_button = tk.Button(
+            root, text="Install LaunchiCube", command=self.install_launchicube,
+            bg="#7289DA", fg="white", font=("Arial", 12, "bold")
+        )
         self.action_button.pack(pady=5)
 
-        self.recheck_button = tk.Button(root, text="Recheck Libraries", command=self.recheck_libraries, bg="#FF5555", fg="white", font=("Arial", 12, "bold"))
+        self.recheck_button = tk.Button(
+            root, text="Recheck Libraries", command=self.recheck_libraries,
+            bg="#FF5555", fg="white", font=("Arial", 12, "bold")
+        )
         self.recheck_button.pack(pady=5)
 
     def populate_libraries(self):
@@ -80,8 +114,12 @@ class Installer:
             entry_frame = tk.Frame(self.scrollable_frame, bg="#23272A", padx=10, pady=5)
             entry_frame.pack(fill="x", padx=5, pady=5)
 
-            tk.Label(entry_frame, text=lib["name"], fg="white", bg="#23272A", font=("Arial", 12, "bold")).pack(anchor="w")
-            tk.Label(entry_frame, text=lib["description"], fg="white", bg="#23272A", justify="left", wraplength=950).pack(anchor="w")
+            tk.Label(
+                entry_frame, text=lib["name"], fg="white", bg="#23272A", font=("Arial", 12, "bold")
+            ).pack(anchor="w")
+            tk.Label(
+                entry_frame, text=lib["description"], fg="white", bg="#23272A", justify="left", wraplength=950
+            ).pack(anchor="w")
 
             self.library_entries.append(entry_frame)
 
@@ -98,13 +136,15 @@ class Installer:
 
     def install_launchicube(self):
         self.recheck_libraries()
-        if self.missing_libraries == [{"name": "None!", "description": "There is no missing libraries! You can now install!"}]:
+        if self.missing_libraries == [
+            {"name": "None!", "description": "There is no missing libraries! You can now install!"}
+        ]:
             from requests import get
             import subprocess
-            def save_link_as_file(link, filepath, bytes=False):
+            def save_link_as_file(link, filepath):
                 r = get(link)
-                with open(filepath, f"w{'b' if bytes else ''}") as f:
-                    f.write(r.content if bytes else r.text)
+                with open(filepath, "w", encoding="utf-8") as f:
+                    f.write(r.text)
                     
             linkbase = "https://raw.githubusercontent.com/Tycho10101/LaunchiCube/refs/heads/main/"
             save_link_as_file(f"{linkbase}misc/installer_backend.py", "installer_backend.py")
@@ -113,7 +153,7 @@ class Installer:
             os.remove("installer_backend.py")
             os.remove("installer.py")
             subprocess.Popen(["python", "main.py"])
-            quit()
+            __import__('sys').exit()
         else:
             import threading
             def fix():

@@ -1,0 +1,10 @@
+[MESSAGES CONTROL]
+disable=trailing-whitespace,
+	too-few-public-methods,
+	too-many-instance-attributes,
+	missing-module-docstring,
+	missing-class-docstring,
+	missing-function-docstring
+
+[MISC]
+max-line-length=120
