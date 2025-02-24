@@ -144,9 +144,12 @@ class gui:
             
             ext = '.exe' if PLAT_WIN else ''
             quote = "" if PLAT_WIN else "'"
-            pre = '' if PLAT_WIN else '../../'
-            execute_dir = f"{quote}{pre}clients/{instance['ver']}{ext}{quote}"
-            subprocess.run([execute_dir], cwd=f'instances/{instance['dir']}/', shell=not PLAT_WIN)
+            pre = f'instances/{instance["dir"]}/' if PLAT_WIN else ''
+            execute_dir = f"{instance['ver']}{ext}"
+            
+            shutil.copy(f"clients/{execute_dir}", f"instances/{instance['dir']}/ClassiCube{ext}")
+            subprocess.run([f"{quote}{pre}ClassiCube{quote}"], cwd=f'instances/{instance['dir']}/', shell=not PLAT_WIN)
+            os.remove(f"instances/{instance['dir']}/ClassiCube{ext}") 
 
     def update_right_bar(self, instance):
         for widget in self.right_frame.winfo_children():

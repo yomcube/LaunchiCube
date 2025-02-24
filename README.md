@@ -3,9 +3,11 @@
 
 A simple multi-instance launcher for ClassiCube, inspired by MultiMC, and made in Python
 
-## Instalation
-Make sure a python version around 3.12
-Download the installer.py at misc/installer.py and run that in an empty folder for LaunchiCube
+## Requirements
+
+- Recomended Python Version: 3.12
+- requests
+- Pillow
 
 ## Features
 
@@ -37,8 +39,3 @@ Download the installer.py at misc/installer.py and run that in an empty folder f
   		- 🟥 Unix Encryption (May not add as it will be Quite difficult. It's XTEA encryption with machine and OS specific key. OG code [here](https://github.com/ClassiCube/ClassiCube/blob/6d5a5b78c8b8e99d5bb4f557b8caafd9d5bb8a5b/src/Platform_Posix.c#L1382). It was deliberately designed so passwords could not be transferred between devices or easily accessed by other apps. If you are willing, you can make it yourself.)
 	- 🟥 Settings
 	- 🟥 Themes
- 	- 🟥 Custom Server Launcher
-
-## Bugs
-
-- Client can't use plugins, because "ClassiCube.exe is missing"
