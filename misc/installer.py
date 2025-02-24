@@ -1,4 +1,9 @@
 import os
+import subprocess
+from sys import exit as sysexit
+import threading
+
+from utils import get
 
 HAS_TKINTER = False
 while not HAS_TKINTER:
@@ -108,6 +113,8 @@ For MacOS use: brew install python3-requests""",
             bg="#FF5555", fg="white", font=("Arial", 12, "bold")
         )
         self.recheck_button.pack(pady=5)
+        
+        self.timer = None
 
     def populate_libraries(self):
         for lib in self.missing_libraries:
@@ -139,8 +146,6 @@ For MacOS use: brew install python3-requests""",
         if self.missing_libraries == [
             {"name": "None!", "description": "There is no missing libraries! You can now install!"}
         ]:
-            from requests import get
-            import subprocess
             def save_link_as_file(link, filepath):
                 r = get(link)
                 with open(filepath, "w", encoding="utf-8") as f:
@@ -148,14 +153,13 @@ For MacOS use: brew install python3-requests""",
                     
             linkbase = "https://raw.githubusercontent.com/Tycho10101/LaunchiCube/refs/heads/main/"
             save_link_as_file(f"{linkbase}misc/installer_backend.py", "installer_backend.py")
-            from installer_backend import installer_backend
+            installer_backend = __import__('installer_backend')
             installer_backend.install()
             os.remove("installer_backend.py")
             os.remove("installer.py")
             subprocess.Popen(["python", "main.py"])
-            __import__('sys').exit()
+            sysexit()
         else:
-            import threading
             def fix():
                 self.action_button.config(text="Install LaunchiCube")
             self.action_button.config(text="There are still missing libraries!")
