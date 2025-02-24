@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# pylint: disable=bare-except
+
 import os
 import subprocess
 from sys import exit as sysexit
@@ -152,7 +155,7 @@ For MacOS use: brew install python3-requests""",
             installer_backend.install()
             os.remove("installer_backend.py")
             os.remove("installer.py")
-            subprocess.Popen(["python", "main.py"])
+            subprocess.Popen(["python", "main.py"]) # pylint: disable=consider-using-with
             sysexit()
         else:
             def fix():
@@ -166,6 +169,6 @@ For MacOS use: brew install python3-requests""",
             self.timer.start()
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = Installer(root)
-    root.mainloop()
+    r = tk.Tk()
+    app = Installer(r)
+    r.mainloop()
