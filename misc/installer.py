@@ -3,7 +3,7 @@ import subprocess
 from sys import exit as sysexit
 import threading
 
-from utils import get
+from utils import get, save_link_as_file
 
 HAS_TKINTER = False
 while not HAS_TKINTER:
@@ -146,13 +146,8 @@ For MacOS use: brew install python3-requests""",
         if self.missing_libraries == [
             {"name": "None!", "description": "There is no missing libraries! You can now install!"}
         ]:
-            def save_link_as_file(link, filepath):
-                r = get(link)
-                with open(filepath, "w", encoding="utf-8") as f:
-                    f.write(r.text)
-                    
             linkbase = "https://raw.githubusercontent.com/Tycho10101/LaunchiCube/refs/heads/main/"
-            save_link_as_file(f"{linkbase}misc/installer_backend.py", "installer_backend.py")
+            utils.save_link_as_file(f"{linkbase}misc/installer_backend.py", "installer_backend.py")
             installer_backend = __import__('installer_backend')
             installer_backend.install()
             os.remove("installer_backend.py")
