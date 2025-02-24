@@ -3,12 +3,22 @@ import json
 import os
 from os.path import exists, splitext, join
 from re import sub
-from requests import Session
 from sys import platform
 
-PLAT_WIN = platform == 'win32' or platform == 'cygwin'
+from requests import Session
+from requests import get as rget
+
+PLAT_WIN = platform in ('win32', 'cygwin')
 PLAT_NIX = platform == 'linux'
 PLAT_MAC = platform == 'darwin'
+
+def get(url, **kwargs):
+    return rget(url, timeout=60, **kwargs)
+
+def save_link_as_file(link, filepath):
+    r = get(link)
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(r.text)
 
 def load_file(filename):
     if exists(filename):
@@ -32,31 +42,32 @@ def get_safe_unique_filename(directory, filename):
 
     return new_filename
 
+def search_option(lines, option) -> int or None:
+    where = None
+    for idx, val in enumerate(lines):
+        if val.startswith(f"{option}="):
+            where = idx
+    return where
+
 def change_option(instance, option, value):
     f = load_file(f"instances/{instance}/options.txt")
-    f = f.split("\n")
-    where = None
-    for i in range(len(f)):
-        if f[i].startswith(f"{option}="):
-            where = i
-    
-    if where == None:
+    lines = f.split("\n")
+    where = search_option(lines, option)
+
+    if where is None:
         f.append(f"{option}={value}")
     else:
         f[where] = f"{option}={value}"
     save_file(f"instances/{instance}/options.txt", "\n".join(f))
-    
+
 def delete_option(instance, option):
     f = load_file(f"instances/{instance}/options.txt")
-    f = f.split("\n")
-    where = None
-    for i in range(len(f)):
-        if f[i].startswith(f"{option}="):
-            where = i
-    
-    if not where == None:
+    lines = f.split("\n")
+    where = search_option(lines, option)
+
+    if not where is None:
         del f[where]
-    
+
     save_file(f"instances/{instance}/options.txt", "\n".join(f))
 
 
@@ -66,11 +77,17 @@ if PLAT_WIN:
         import ctypes.wintypes
         crypt32 = ctypes.windll.crypt32
 
+        # pylint: disable-next=invalid-name
         class DATA_BLOB(ctypes.Structure):
             _fields_ = [("cbData", ctypes.wintypes.DWORD), ("pbData", ctypes.POINTER(ctypes.c_ubyte))]
 
         def encrypt_data(data: bytes) -> bytes:
-            blob_in = DATA_BLOB(len(data), ctypes.cast(ctypes.create_string_buffer(data), ctypes.POINTER(ctypes.c_ubyte)))
+            blob_in = DATA_BLOB(
+                len(data),
+                ctypes.cast(
+                    ctypes.create_string_buffer(data), ctypes.POINTER(ctypes.c_ubyte)
+                )
+            )
             blob_out = DATA_BLOB()
             
             if crypt32.CryptProtectData(
@@ -79,21 +96,20 @@ if PLAT_WIN:
                 encrypted_bytes = ctypes.string_at(blob_out.pbData, blob_out.cbData)
                 ctypes.windll.kernel32.LocalFree(blob_out.pbData)
                 return b64encode(encrypted_bytes).decode("utf-8")
-            else:
-                raise RuntimeError(f"Encryption failed. Error Code: {ctypes.windll.kernel32.GetLastError()}")
+            raise RuntimeError(f"Encryption failed. Error Code: {ctypes.windll.kernel32.GetLastError()}")
     finally:
         pass
 
-def getVersions(version_type):
+def get_versions(version_type):
     return ["Latest Stable Version"] if version_type == "stable" else ["Latest Dev Version"]
 
-def instanceNameExists(name):
+def instance_name_exists(name):
     return any(i["name"] == name for i in json.loads(load_file("instances/index.json")))
 
 def username_exists(name):
     return any(i["name"] == name for i in json.loads(load_file("accounts.json"))["accounts"])
 
-def makeInstance(name, version):
+def make_instance(name, version):
     safe_unique_filename = get_safe_unique_filename("instances/", name)
     instances_json = json.loads(load_file("instances/index.json"))
     instances_json.append({"name": name, "ver": version, "dir": safe_unique_filename})
@@ -109,5 +125,5 @@ def login_to_cc(username, password):
     session = Session()
     r = session.get("https://www.classicube.net/api/login/")
     myobj = {"username": username, "password": password, "token": r.json()["token"]}
-    x = session.post("https://www.classicube.net/api/login/", data=myobj)
-    return [x.json()["authenticated"],x.json()["username"]]
+    x = session.post("https://www.classicube.net/api/login/", data=myobj).json
+    return [x["authenticated"],x["username"]]
