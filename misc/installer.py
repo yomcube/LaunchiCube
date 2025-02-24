@@ -147,7 +147,7 @@ For MacOS use: brew install python3-requests""",
             {"name": "None!", "description": "There is no missing libraries! You can now install!"}
         ]:
             linkbase = "https://raw.githubusercontent.com/Tycho10101/LaunchiCube/refs/heads/main/"
-            utils.save_link_as_file(f"{linkbase}misc/installer_backend.py", "installer_backend.py")
+            save_link_as_file(f"{linkbase}misc/installer_backend.py", "installer_backend.py")
             installer_backend = __import__('installer_backend')
             installer_backend.install()
             os.remove("installer_backend.py")
