@@ -3,10 +3,9 @@
 
 import os
 import subprocess
+import importlib.util
 from sys import exit as sysexit
 import threading
-
-from utils import save_link_as_file
 
 HAS_TKINTER = False
 while not HAS_TKINTER:
@@ -25,20 +24,32 @@ For MacOS use: brew install python3-tk""")
     if not HAS_TKINTER:
         input("Press enter to try again.")
 
+def has_library(library):
+    try:
+        if importlib.util.find_spec(library) is None:
+            return False
+        else:
+            return True
+    except ImportError:
+        return False
+
 def test_libraries(libraries):
     missing_libraries = []
     for lib in libraries:
-        try:
-            exec(lib['import'])
-        except:
+        if not has_library(lib['library_name']):
             missing_libraries.append(lib)
             
     if not missing_libraries:
         missing_libraries.append(
-            {"name": "None!", "description": "There is no missing libraries! You can now install!"}
+            {"name": "None!", "description": "There are no missing libraries! You can now install!"}
         )
     return missing_libraries
         
+def save_link_as_file(link, filepath):
+    import requests
+    r = requests.get(link)
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(r.text)
 
 class Installer:
     def __init__(self, root):
@@ -77,7 +88,7 @@ To install this, use the respective command below:
 For Windows use: pip install pillow
 For Linux use: sudo apt install python3-pillow
 For MacOS use: brew install python3-pillow""",
-                "import": "from PIL import Image"
+                "library_name": "PIL"
             },
             {
                 "name": "Pillow-tk",
@@ -86,7 +97,7 @@ To install this, use the respective command below:
 For Windows use: pip install pillow.imagetk
 For Linux use: sudo apt install python3-pillow.imagetk
 For MacOS use: brew install python3-pillow.imagetk""",
-                "import": "from PIL import ImageTk"
+                "library_name": "PIL.ImageTk"
             },
             {
                 "name": "Requests",
@@ -95,7 +106,7 @@ To install this, use the respective command below:
 For Windows use: pip install requests
 For Linux use: sudo apt install python3-requests
 For MacOS use: brew install python3-requests""",
-                "import": "import requests"
+                "library_name": "requests"
             },
         ]
         
@@ -147,7 +158,7 @@ For MacOS use: brew install python3-requests""",
     def install_launchicube(self):
         self.recheck_libraries()
         if self.missing_libraries == [
-            {"name": "None!", "description": "There is no missing libraries! You can now install!"}
+            {"name": "None!", "description": "There are no missing libraries! You can now install!"}
         ]:
             linkbase = "https://raw.githubusercontent.com/Tycho10101/LaunchiCube/refs/heads/main/"
             save_link_as_file(f"{linkbase}misc/installer_backend.py", "installer_backend.py")
