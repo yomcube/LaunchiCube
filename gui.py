@@ -88,7 +88,7 @@ class Gui:
 
         return temp_text + "..." if temp_text != text else text
 
-    def on_resize(self):
+    def on_resize(self, event=None):
         last_instances_columns = 1
         instances_columns = math.floor(self.main_frame.winfo_width()/195)
         if not instances_columns == last_instances_columns:
@@ -320,12 +320,12 @@ class Gui:
 
         self.root.bind("<Configure>", self.update_menu_position)
 
-    def update_menu_position(self):
+    def update_menu_position(self, event=None):
         if self.dropdown_window:
             a = [
-                35*len(self.options),
-                self.acc_switch_button.winfo_rootx(),
-                self.acc_switch_button.winfo_rooty() + self.acc_switch_button.winfo_height()
+                str(35*len(self.options)),
+                str(self.acc_switch_button.winfo_rootx()),
+                str(self.acc_switch_button.winfo_rooty() + self.acc_switch_button.winfo_height())
             ]
             self.dropdown_window.geometry(f"150x{'+'.join(a)}")
 

@@ -51,19 +51,20 @@ def search_option(lines, option) -> int or None:
 
 def change_option(instance, option, value):
     f = load_file(f"instances/{instance}/options.txt")
-    lines = f.split("\n")
-    where = search_option(lines, option)
+    f = f.split("\n")
+    where = search_option(f, option)
+    print(where)
 
     if where is None:
         f.append(f"{option}={value}")
     else:
-        f[where] = f"{option}={value}"
+        f[int(where)] = f"{option}={value}"
     save_file(f"instances/{instance}/options.txt", "\n".join(f))
 
 def delete_option(instance, option):
     f = load_file(f"instances/{instance}/options.txt")
-    lines = f.split("\n")
-    where = search_option(lines, option)
+    f = f.split("\n")
+    where = search_option(f, option)
 
     if not where is None:
         del f[where]
@@ -125,5 +126,5 @@ def login_to_cc(username, password):
     session = Session()
     r = session.get("https://www.classicube.net/api/login/")
     myobj = {"username": username, "password": password, "token": r.json()["token"]}
-    x = session.post("https://www.classicube.net/api/login/", data=myobj).json
+    x = session.post("https://www.classicube.net/api/login/", data=myobj).json()
     return [x["authenticated"],x["username"]]
