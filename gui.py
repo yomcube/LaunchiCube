@@ -43,7 +43,7 @@ class Gui:
             print("logo.png not found!")
             self.launcher_icon = None
 
-        self.top_frame = tk.Frame(root, bg=color_frame_and_label_bg, height=50)
+        self.top_frame = tk.Frame(root, bg=COL['bg_frame_and_label'], height=50)
         self.top_frame.pack(fill="x")
 
         tk.Button(self.top_frame, text="Add Instance", command=self.open_add_instance,
@@ -51,22 +51,22 @@ class Gui:
         tk.Button(self.top_frame, text="Update", command=self.update,
                   bg=COL['bg_button'], fg="white", font=("Arial", 12, "bold")).pack(pady=10, padx=10, side="left")
 
-        self.right_frame = tk.Frame(root, bg=color_frame_and_label_bg, width=250)
+        self.right_frame = tk.Frame(root, bg=COL['bg_frame_and_label'], width=250)
         self.right_frame.pack_propagate(False)
         self.right_frame.pack(fill="y", side="right")
 
-        self.right_logo_label = tk.Label(self.right_frame, bg=color_frame_and_label_bg)
-        self.right_name_label = tk.Label(self.right_frame, bg=color_frame_and_label_bg, fg="white", font=("Arial", 14, "bold"))
+        self.right_logo_label = tk.Label(self.right_frame, bg=COL['bg_frame_and_label'])
+        self.right_name_label = tk.Label(self.right_frame, bg=COL['bg_frame_and_label'], fg="white", font=("Arial", 14, "bold"))
         self.play_button = tk.Button(
-            self.right_frame, text="Play", bg=color_play_button_bg, fg="white", font=("Arial", 12, "bold"),
+            self.right_frame, text="Play", bg=COL['bg_play_button'], fg="white", font=("Arial", 12, "bold"),
             command=lambda: self.start_game(self.selected_instance), state="disabled"
         )
         self.delete_button = tk.Button(
-            self.right_frame, text="Delete", bg=color_delete_button_bg, fg="white", font=("Arial", 12, "bold"),
+            self.right_frame, text="Delete", bg=COL['bg_delete_button'], fg="white", font=("Arial", 12, "bold"),
             command=lambda: self.delete_instance(self.selected_instance), state="disabled"
         )                                     
 
-        self.main_frame = tk.Frame(root, bg=color_main_frame_bg)
+        self.main_frame = tk.Frame(root, bg=COL['bg_main_frame'])
         self.main_frame.pack(expand=True, fill="both")
         self.main_frame.bind("<Configure>", self.on_resize)
 
@@ -167,18 +167,18 @@ class Gui:
         else:
             instance_logo = self.launcher_icon
 
-        self.right_logo_label = tk.Label(self.right_frame, image=instance_logo, bg=color_frame_and_label_bg)
+        self.right_logo_label = tk.Label(self.right_frame, image=instance_logo, bg=COL['bg_frame_and_label'])
         self.right_logo_label.image = instance_logo
         self.right_logo_label.pack(pady=20)
 
-        self.right_name_label = tk.Label(self.right_frame, text=instance["name"], bg=color_frame_and_label_bg,
+        self.right_name_label = tk.Label(self.right_frame, text=instance["name"], bg=COL['bg_frame_and_label'],
                                          fg="white", font=("Arial", 14, "bold"))
         self.right_name_label.pack(pady=10)
 
-        self.play_button = tk.Button(self.right_frame, text="Play", bg=color_play_button_bg, fg="white",
+        self.play_button = tk.Button(self.right_frame, text="Play", bg=COL['bg_play_button'], fg="white",
                                      font=("Arial", 12, "bold"), command=lambda: self.start_game(instance))
         self.play_button.pack(pady=10)
-        self.delete_button = tk.Button(self.right_frame, text="Delete", bg=color_delete_button_bg, fg="white",
+        self.delete_button = tk.Button(self.right_frame, text="Delete", bg=COL['bg_delete_button'], fg="white",
                                      font=("Arial", 12, "bold"), command=lambda: self.delete_instance(instance))
         self.delete_button.pack(pady=10)
 
@@ -349,7 +349,7 @@ class Gui:
         add_window.title("Account Manager")
         add_window.geometry("600x375")
         add_window.configure(bg=COL['bg_main'])
-        left_frame = tk.Frame(add_window, bg=color_frame_and_label_bg, width=150)
+        left_frame = tk.Frame(add_window, bg=COL['bg_frame_and_label'], width=150)
         left_frame.pack_propagate(False)
         left_frame.pack(fill="y", side="left")
         listbox = tk.Listbox(add_window, bg=COL['bg_main'], fg="white", bd=0, highlightthickness=0)
