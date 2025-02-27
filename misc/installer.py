@@ -49,6 +49,7 @@ def save_link_as_file(link, filepath):
     r = requests.get(link) # pylint: disable=missing-timeout
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(r.text)
+        
 
 class Installer:
     def __init__(self, root):
@@ -179,6 +180,6 @@ For MacOS use: brew install python3-requests""",
             self.timer.start()
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = Installer(root)
-    root.mainloop()
+    root_app = tk.Tk()
+    app = Installer(root_app)
+    root_app.mainloop()
