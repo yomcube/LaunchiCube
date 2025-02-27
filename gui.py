@@ -16,11 +16,18 @@ LOGO_SIZE = (150, 150)
 MAX_TEXT_WIDTH = 140
 
 class Gui:
+    color_main_bg = "#2C2F33"
+    color_main_frame_bg = "#23272A"
+    color_button_bg = "#7289DA"
+    color_frame_and_label_bg = "#3C3F41"
+    color_play_button_bg = "#4CAF50"
+    color_delete_button_bg = "#AF4C50"
+    
     def __init__(self, root):
         self.root = root
         self.root.title("LaunchiCube")
         self.root.geometry("1200x750")
-        self.root.configure(bg="#2C2F33")
+        self.root.configure(bg=color_main_bg)
 
         self.load_accounts()
         
@@ -34,30 +41,30 @@ class Gui:
             print("logo.png not found!")
             self.launcher_icon = None
 
-        self.top_frame = tk.Frame(root, bg="#3C3F41", height=50)
+        self.top_frame = tk.Frame(root, bg=color_frame_and_label_bg, height=50)
         self.top_frame.pack(fill="x")
 
         tk.Button(self.top_frame, text="Add Instance", command=self.open_add_instance,
-                  bg="#7289DA", fg="white", font=("Arial", 12, "bold")).pack(pady=10, padx=10, side="left")
+                  bg=color_button_bg, fg="white", font=("Arial", 12, "bold")).pack(pady=10, padx=10, side="left")
         tk.Button(self.top_frame, text="Update", command=self.update,
-                  bg="#7289DA", fg="white", font=("Arial", 12, "bold")).pack(pady=10, padx=10, side="left")
+                  bg=color_button_bg, fg="white", font=("Arial", 12, "bold")).pack(pady=10, padx=10, side="left")
 
-        self.right_frame = tk.Frame(root, bg="#3C3F41", width=250)
+        self.right_frame = tk.Frame(root, bg=color_frame_and_label_bg, width=250)
         self.right_frame.pack_propagate(False)
         self.right_frame.pack(fill="y", side="right")
 
-        self.right_logo_label = tk.Label(self.right_frame, bg="#3C3F41")
-        self.right_name_label = tk.Label(self.right_frame, bg="#3C3F41", fg="white", font=("Arial", 14, "bold"))
+        self.right_logo_label = tk.Label(self.right_frame, bg=color_frame_and_label_bg)
+        self.right_name_label = tk.Label(self.right_frame, bg=color_frame_and_label_bg, fg="white", font=("Arial", 14, "bold"))
         self.play_button = tk.Button(
-            self.right_frame, text="Play", bg="#4CAF50", fg="white", font=("Arial", 12, "bold"),
+            self.right_frame, text="Play", bg=color_play_button_bg, fg="white", font=("Arial", 12, "bold"),
             command=lambda: self.start_game(self.selected_instance), state="disabled"
         )
         self.delete_button = tk.Button(
-            self.right_frame, text="Delete", bg="#AF4C50", fg="white", font=("Arial", 12, "bold"),
+            self.right_frame, text="Delete", bg=color_delete_button_bg, fg="white", font=("Arial", 12, "bold"),
             command=lambda: self.delete_instance(self.selected_instance), state="disabled"
         )                                     
 
-        self.main_frame = tk.Frame(root, bg="#23272A")
+        self.main_frame = tk.Frame(root, bg=color_main_frame_bg)
         self.main_frame.pack(expand=True, fill="both")
         self.main_frame.bind("<Configure>", self.on_resize)
 
@@ -66,7 +73,7 @@ class Gui:
 
         self.acc_switch_button = tk.Button(
             self.top_frame, text="Select an Option", command=self.show_menu,
-            bg="#7289DA", fg="white", font=("Arial", 12, "bold")
+            bg=color_button_bg, fg="white", font=("Arial", 12, "bold")
         )
         self.acc_switch_button.pack(pady=10, padx=10, side="right")
         
@@ -158,18 +165,18 @@ class Gui:
         else:
             instance_logo = self.launcher_icon
 
-        self.right_logo_label = tk.Label(self.right_frame, image=instance_logo, bg="#3C3F41")
+        self.right_logo_label = tk.Label(self.right_frame, image=instance_logo, bg=color_frame_and_label_bg)
         self.right_logo_label.image = instance_logo
         self.right_logo_label.pack(pady=20)
 
-        self.right_name_label = tk.Label(self.right_frame, text=instance["name"], bg="#3C3F41",
+        self.right_name_label = tk.Label(self.right_frame, text=instance["name"], bg=color_frame_and_label_bg,
                                          fg="white", font=("Arial", 14, "bold"))
         self.right_name_label.pack(pady=10)
 
-        self.play_button = tk.Button(self.right_frame, text="Play", bg="#4CAF50", fg="white",
+        self.play_button = tk.Button(self.right_frame, text="Play", bg=color_play_button_bg, fg="white",
                                      font=("Arial", 12, "bold"), command=lambda: self.start_game(instance))
         self.play_button.pack(pady=10)
-        self.delete_button = tk.Button(self.right_frame, text="Delete", bg="#AF4C50", fg="white",
+        self.delete_button = tk.Button(self.right_frame, text="Delete", bg=color_delete_button_bg, fg="white",
                                      font=("Arial", 12, "bold"), command=lambda: self.delete_instance(instance))
         self.delete_button.pack(pady=10)
 
@@ -195,16 +202,16 @@ class Gui:
             else:
                 instance_icon = self.launcher_icon
 
-            frame = tk.Frame(self.main_frame, bg="#2C2F33", padx=5, pady=5, relief="flat")
+            frame = tk.Frame(self.main_frame, bg=color_main_bg, padx=5, pady=5, relief="flat")
             frame.grid(row=row, column=col, padx=10, pady=5, sticky="w")
 
-            logo_label = tk.Label(frame, image=instance_icon, bg="#2C2F33")
+            logo_label = tk.Label(frame, image=instance_icon, bg=color_main_bg)
             logo_label.image = instance_icon
             logo_label.pack(padx=5)
 
             truncated_text = self.truncate_text(instance["name"], ("Arial", 10), MAX_TEXT_WIDTH)
             name_label = tk.Label(frame, text=truncated_text, font=("Arial", 10), fg="white",
-                                  bg="#2C2F33", anchor="w", wraplength=MAX_TEXT_WIDTH)
+                                  bg=color_main_bg, anchor="w", wraplength=MAX_TEXT_WIDTH)
             name_label.pack(padx=5, fill="x", expand=True)
 
             frame.bind("<Button-1>", lambda e, i=instance: on_instance_click(i))
@@ -253,9 +260,9 @@ class Gui:
         add_window = tk.Toplevel(self.root)
         add_window.title("Add Instance")
         add_window.geometry("300x250")
-        add_window.configure(bg="#2C2F33")
+        add_window.configure(bg=color_main_bg)
 
-        tk.Label(add_window, text="Instance Name:", bg="#2C2F33", fg="white").pack(pady=5)
+        tk.Label(add_window, text="Instance Name:", bg=color_main_bg, fg="white").pack(pady=5)
         name_entry = tk.Entry(add_window)
         name_entry.pack(pady=5)
 
@@ -269,9 +276,9 @@ class Gui:
             versions_dropdown.current(0)
 
         stable_radio = tk.Radiobutton(add_window, text="Stable", variable=version_type, value="stable",
-                                      command=update_versions, bg="#2C2F33", fg="white", selectcolor="#2C2F33")
+                                      command=update_versions, bg=color_main_bg, fg="white", selectcolor=color_main_bg)
         dev_radio = tk.Radiobutton(add_window, text="Dev", variable=version_type, value="dev",
-                                   command=update_versions, bg="#2C2F33", fg="white", selectcolor="#2C2F33")
+                                   command=update_versions, bg=color_main_bg, fg="white", selectcolor=color_main_bg)
 
         stable_radio.pack()
         dev_radio.pack()
@@ -285,7 +292,7 @@ class Gui:
                 add_window.destroy()
                 self.load_instances()
 
-        tk.Button(add_window, text="Create", command=create_instance, bg="#7289DA", fg="white").pack(pady=10)
+        tk.Button(add_window, text="Create", command=create_instance, bg=color_button_bg, fg="white").pack(pady=10)
 
     def select_option(self, option):
         if not option == "Manage Accounts":
@@ -339,11 +346,11 @@ class Gui:
         add_window = tk.Toplevel(self.root)
         add_window.title("Account Manager")
         add_window.geometry("600x375")
-        add_window.configure(bg="#2C2F33")
-        left_frame = tk.Frame(add_window, bg="#3C3F41", width=150)
+        add_window.configure(bg=color_main_bg)
+        left_frame = tk.Frame(add_window, bg=color_frame_and_label_bg, width=150)
         left_frame.pack_propagate(False)
         left_frame.pack(fill="y", side="left")
-        listbox = tk.Listbox(add_window, bg="#2C2F33", fg="#FFFFFF", bd=0, highlightthickness=0)
+        listbox = tk.Listbox(add_window, bg=color_main_bg, fg="white", bd=0, highlightthickness=0)
         listbox.pack(fill="both", expand=True, pady=5, padx=5)
         for i in range(0, len(self.options) - 1):
             listbox.insert(i + 1, self.options[i])
@@ -372,26 +379,26 @@ class Gui:
                 self.select_option(f["accounts"][0]["name"])
                 add_window.destroy()
         
-        tk.Button(left_frame, text="Add Account", command=add_account, bg="#7289DA", fg="white")\
+        tk.Button(left_frame, text="Add Account", command=add_account, bg=color_button_bg, fg="white")\
             .pack(pady=10, fill="x", padx=10)
-        tk.Button(left_frame, text="Delete Account", command=del_account, bg="#7289DA", fg="white")\
+        tk.Button(left_frame, text="Delete Account", command=del_account, bg=color_button_bg, fg="white")\
             .pack(pady=10, fill="x", padx=10)
     
     def open_add_account(self):
         add_window = tk.Toplevel(self.root)
         add_window.title("Add Account")
         add_window.geometry("300x250")
-        add_window.configure(bg="#2C2F33")
+        add_window.configure(bg=color_main_bg)
 
-        tk.Label(add_window, text="Username:", bg="#2C2F33", fg="white").pack(pady=5)
+        tk.Label(add_window, text="Username:", bg=color_main_bg, fg="white").pack(pady=5)
         name_entry = tk.Entry(add_window)
         name_entry.pack(pady=5)
         
-        tk.Label(add_window, text="Password:", bg="#2C2F33", fg="white").pack(pady=5)
+        tk.Label(add_window, text="Password:", bg=color_main_bg, fg="white").pack(pady=5)
         password_entry = tk.Entry(add_window, show="*")
         password_entry.pack(pady=5)
         
-        status = tk.Label(add_window, text="", bg="#2C2F33", fg="red")
+        status = tk.Label(add_window, text="", bg=color_main_bg, fg="red")
         status.pack(pady=5)
 
         def create_account():
@@ -414,4 +421,4 @@ class Gui:
             else:
                 status.config(text = "Failed to login")
                 
-        tk.Button(add_window, text="Login", command=create_account, bg="#7289DA", fg="white").pack(pady=10)
+        tk.Button(add_window, text="Login", command=create_account, bg=color_button_bg, fg="white").pack(pady=10)
