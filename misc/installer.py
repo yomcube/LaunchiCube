@@ -28,8 +28,7 @@ def has_library(library):
     try:
         if importlib.util.find_spec(library) is None:
             return False
-        else:
-            return True
+        return True
     except ImportError:
         return False
 
@@ -46,8 +45,8 @@ def test_libraries(libraries):
     return missing_libraries
         
 def save_link_as_file(link, filepath):
-    import requests
-    r = requests.get(link)
+    requests = __import__("requests")
+    r = requests.get(link) # pylint: disable=missing-timeout
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(r.text)
 
@@ -180,6 +179,6 @@ For MacOS use: brew install python3-requests""",
             self.timer.start()
 
 if __name__ == "__main__":
-    r = tk.Tk()
-    app = Installer(r)
-    r.mainloop()
+    root = tk.Tk()
+    app = Installer(root)
+    root.mainloop()

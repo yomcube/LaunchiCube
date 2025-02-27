@@ -88,7 +88,7 @@ class Gui:
 
         return temp_text + "..." if temp_text != text else text
 
-    def on_resize(self, event=None):
+    def on_resize(self, event=None): # pylint: disable=unused-argument
         last_instances_columns = 1
         instances_columns = math.floor(self.main_frame.winfo_width()/195)
         if not instances_columns == last_instances_columns:
@@ -320,7 +320,7 @@ class Gui:
 
         self.root.bind("<Configure>", self.update_menu_position)
 
-    def update_menu_position(self, event=None):
+    def update_menu_position(self, event=None): # pylint: disable=unused-argument
         if self.dropdown_window:
             a = [
                 str(35*len(self.options)),
